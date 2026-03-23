@@ -328,3 +328,100 @@ export const executionApi = {
   getArtifactUrl: (key: string) =>
     apiFetch<{ url: string }>(`/execution/artifact-url?key=${encodeURIComponent(key)}`),
 };
+
+// ──────────────────────── Classification / Triage ──────────────
+
+export interface ClassificationResult {
+  classification: string;
+  confidence: number;
+  reasoning: string;
+  matchedPatterns: string[];
+  method: 'heuristic' | 'llm' | 'manual';
+}
+
+export interface ClassifyRunResponse {
+  classified: number;
+  results: Array<{ resultId: string; classification: ClassificationResult }>;
+}
+
+export interface ClassificationSummary {
+  total: number;
+  byClassification: Record<string, number>;
+  avgConfidence: number;
+  triaged: number;
+  untriaged: number;
+}
+
+export interface TriageItem extends TestResult {
+  run: {
+    id: string;
+    environment: string | null;
+    git_branch: string | null;
+    git_commit: string | null;
+    created_at: string;
+  };
+}
+
+export interface PaginatedTriageQueue {
+  results: TriageItem[];
+  total: number;
+}
+
+export interface FailurePattern {
+  id: string;
+  name: string;
+  classification: string;
+  errorPatterns: string[];
+  stackPatterns: string[];
+  description: string;
+  priority: number;
+  enabled: boolean;
+}
+
+export const classificationApi = {
+  classifyRun: (runId: string) =>
+    apiFetch<ClassifyRunResponse>('/classification/classify-run', {
+      method: 'POST',
+      body: JSON.stringify({ runId }),
+    }),
+
+  getRunSummary: (runId: string) =>
+    apiFetch<ClassificationSummary>(`/classification/summary/${encodeURIComponent(runId)}`),
+
+  getTriageQueue: (projectId: string, classification?: string, limit = 50, offset = 0) =>
+    apiFetch<PaginatedTriageQueue>(
+      `/classification/triage/${encodeURIComponent(projectId)}?limit=${limit}&offset=${offset}${classification ? `&classification=${encodeURIComponent(classification)}` : ''}`,
+    ),
+
+  reclassifyResult: (resultId: string, classification: string, reason?: string) =>
+    apiFetch<TestResult>(`/classification/result/${encodeURIComponent(resultId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ classification, reason }),
+    }),
+
+  bulkReclassify: (resultIds: string[], classification: string, reason?: string) =>
+    apiFetch<{ updated: number; resultIds: string[] }>('/classification/bulk-reclassify', {
+      method: 'POST',
+      body: JSON.stringify({ resultIds, classification, reason }),
+    }),
+
+  getPatterns: () => apiFetch<FailurePattern[]>('/classification/patterns'),
+
+  addPattern: (data: {
+    name: string;
+    classification: string;
+    errorPatterns: string[];
+    stackPatterns: string[];
+    description: string;
+    priority: number;
+  }) =>
+    apiFetch<FailurePattern>('/classification/patterns', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  removePattern: (patternId: string) =>
+    apiFetch<{ removed: boolean }>(`/classification/patterns/${encodeURIComponent(patternId)}`, {
+      method: 'DELETE',
+    }),
+};

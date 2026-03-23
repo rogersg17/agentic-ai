@@ -93,3 +93,47 @@ export interface TestCompletedPayload {
   errorMessage?: string;
   retryCount: number;
 }
+
+// ─── Classification types ───────────────────────────────────────────────────────
+
+/** Result of running the failure classifier on a test result */
+export interface ClassificationResult {
+  classification: FailureClassification;
+  confidence: number;
+  reasoning: string;
+  matchedPatterns: string[];
+  method: 'heuristic' | 'llm' | 'manual';
+}
+
+/** A pattern used for deterministic classification of failures */
+export interface FailurePattern {
+  id: string;
+  name: string;
+  classification: FailureClassification;
+  /** Regex patterns to match against error messages */
+  errorPatterns: string[];
+  /** Regex patterns to match against stack traces */
+  stackPatterns: string[];
+  /** Description of when this pattern matches */
+  description: string;
+  /** Priority (higher = matched first) */
+  priority: number;
+  enabled: boolean;
+}
+
+/** Triage action taken by a user on a classified failure */
+export enum TriageAction {
+  ACCEPT = 'accept',
+  RECLASSIFY = 'reclassify',
+  IGNORE = 'ignore',
+  CREATE_DEFECT = 'create_defect',
+}
+
+/** Summary of classifications for a run */
+export interface ClassificationSummary {
+  total: number;
+  byClassification: Record<FailureClassification, number>;
+  avgConfidence: number;
+  triaged: number;
+  untriaged: number;
+}
