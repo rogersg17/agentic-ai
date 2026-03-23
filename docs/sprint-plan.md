@@ -185,40 +185,40 @@ Failure classification and triage dashboard.
 
 ---
 
-## Phase 4: Generation (Weeks 13–19) — ⬜ NOT STARTED
+## Phase 4: Generation (Weeks 13–19) — ✅ COMPLETE
 
 AI-powered test generation with human review.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 4.1 | LangGraph.js orchestrator (NestJS module) | ⬜ | `@agentic/agents` package is an empty stub (`export {}`) |
-| 4.2 | Analyst Agent (requirement parsing, AC extraction) | ⬜ | |
-| 4.3 | Generator Agent (RAG-based code gen) | ⬜ | |
-| 4.4 | Reviewer Agent (pre-review checklist) | ⬜ | |
-| 4.5 | LiteLLM gateway integration | ⬜ | Embedding service uses LiteLLM; agent calls not wired |
-| 4.6 | Style extraction from existing tests | ⬜ | |
-| 4.7 | Post-processing (tsc check, lint, selector validation) | ⬜ | |
-| 4.8 | Generation request API endpoints | ⬜ | `generation_requests` table exists; no controller/service |
-| 4.9 | Test generation workbench UI | ⬜ | Sidebar link exists; no page |
-| 4.10 | Approve/edit/reject workflow UI | ⬜ | |
-| 4.11 | Monaco editor integration | ⬜ | |
+| 4.1 | LangGraph.js orchestrator (NestJS module) | ✅ | `@agentic/agents` package fully implemented. LangGraph.js `StateGraph` with 5-node pipeline: analyze → extractStyle → generate → postProcess → review. Conditional edges bail to `END` on failure |
+| 4.2 | Analyst Agent (requirement parsing, AC extraction) | ✅ | LLM-powered AC extraction with deterministic `heuristicAnalysis` fallback. Handles pre-extracted criteria, infers test types, estimates complexity |
+| 4.3 | Generator Agent (RAG-based code gen) | ✅ | Multi-section prompt with style profiles, POs, helpers, fixtures, existing tests. `@covers` annotations + `@generated` markers. Enforces no auto-rewrite of business assertions |
+| 4.4 | Reviewer Agent (pre-review checklist) | ✅ | 8+ deterministic checks: assertion presence, import validation, traceability, PO usage, secret detection, test structure, TODOs, generated annotation. Optional LLM quality check. Never auto-approves |
+| 4.5 | LiteLLM gateway integration | ✅ | OpenAI-compatible gateway in `llm.service.ts`. Configurable model/temperature/maxTokens. Deterministic stub fallback when gateway unavailable |
+| 4.6 | Style extraction from existing tests | ✅ | Pure deterministic analysis (no LLM). Detects import style, describe structure, assertion style, test steps, PO patterns, naming conventions, comment density |
+| 4.7 | Post-processing (tsc check, lint, selector validation) | ✅ | 6 deterministic checks: import resolution (auto-fixes), assertion count, traceability coverage, selector validation against POs, secret scan, `@generated` annotation |
+| 4.8 | Generation request API endpoints | ✅ | 6 endpoints: create request, list by project (paginated), get with results, approve test, reject request, stats. All RBAC-protected with Swagger annotations |
+| 4.9 | Test generation workbench UI | ✅ | Full workbench: project selector, request list with status badges, `NewGenerationDialog` to select requirements/POs/style exemplars from knowledge graph |
+| 4.10 | Approve/edit/reject workflow UI | ✅ | Generation detail page with analysis results, generated test code, review checklist, approve/reject/edit actions |
+| 4.11 | Monaco editor integration | ✅ | `@monaco-editor/react` with dynamic import (SSR disabled). TypeScript syntax highlighting, vs-dark theme, read-only and edit modes |
 
 ---
 
-## Phase 5: Self-Healing (Weeks 17–22) — ⬜ NOT STARTED
+## Phase 5: Self-Healing (Weeks 17–22) — ✅ COMPLETE
 
 Healing proposals with policy gates and review.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 5.1 | Healer Agent | ⬜ | `HealingChangeType`, `HealingRiskLevel` enums + `HealingPolicy` interface exist in shared |
-| 5.2 | Healing policy engine | ⬜ | `createDefaultHealingPolicy()` factory exists; no runtime engine |
-| 5.3 | Assertion immutability enforcement (AST) | ⬜ | |
-| 5.4 | DOM snapshot diffing | ⬜ | |
-| 5.5 | Healing API endpoints | ⬜ | `healing_proposals` table exists; no controller/service |
-| 5.6 | Healing review UI (diff + evidence) | ⬜ | Sidebar link exists; no page |
-| 5.7 | Post-heal validation + auto-revert | ⬜ | |
-| 5.8 | Cumulative healing limit / "unstable test" flag | ⬜ | |
+| 5.1 | Healer Agent | ✅ | `HealerAgent` class in `@agentic/agents` with `diagnose()` + `propose()` methods; 6 diagnostic patterns; deterministic selector/wait healing + LLM fallback |
+| 5.2 | Healing policy engine | ✅ | `evaluatePolicy()` with 9 checks (confidence threshold, run/test limits, exclusions, assertion guard, DOM/screenshot requirements, auto-approve eligibility) |
+| 5.3 | Assertion immutability enforcement (AST) | ✅ | `assertion-guard.ts` with `isAssertionLine()`, `extractAssertions()`, `validateAssertionImmutability()` covering Playwright expect + Jest assert patterns |
+| 5.4 | DOM snapshot diffing | ✅ | `diffDomSnapshots()` parses HTML, detects removed/modified/added/moved elements, suggests alternative selectors via text-match, testid, and Jaccard bigram similarity |
+| 5.5 | Healing API endpoints | ✅ | `HealingController` with 10 REST endpoints (heal-run, proposals CRUD, review, bulk-review, apply, revert, policy, stats); JWT + RBAC guarded |
+| 5.6 | Healing review UI (diff + evidence) | ✅ | `/dashboard/healing` page with project selector, stat cards, filter tabs, proposals table, detail panel with diff viewer, policy checks, bulk actions, apply/revert |
+| 5.7 | Post-heal validation + auto-revert | ✅ | `validate` node in LangGraph pipeline (syntax check, assertion immutability guard); `applyProposal()` + `revertProposal()` in service |
+| 5.8 | Cumulative healing limit / "unstable test" flag | ✅ | `UNSTABLE_TEST_THRESHOLD = 5`; per-test healing count tracked in Neo4j; unstable flag set on tests exceeding threshold; stats endpoint reports unstable tests |
 
 ---
 
@@ -247,21 +247,22 @@ Healing proposals with policy gates and review.
 | **Phase 1: Ingestion & Knowledge** | ✅ Complete | 21/21 + 5 backlog | 21+5 | 100% |
 | **Phase 2: Execution** | ✅ Complete | 9/11 | 11 | ~82% |
 | **Phase 3: Classification + Triage** | ✅ Complete | 7/7 | 7 | 100% |
-| **Phase 4: Generation** | ⬜ Not Started | 0/11 | 11 | 0% |
-| **Phase 5: Self-Healing** | ⬜ Not Started | 0/8 | 8 | 0% |
+| **Phase 4: Generation** | ✅ Complete | 11/11 | 11 | 100% |
+| **Phase 5: Self-Healing** | ✅ Complete | 8/8 | 8 | 100% |
 | **Cross-Cutting** | 🔶 Partially Done | 1/10 | 10 | 10% |
 
-**Overall PoC Progress: Phases 0–3 complete (~68% of total scope), Phases 4–5 pending.**
+**Overall PoC Progress: Phases 0–5 complete (~100% of core scope). Cross-cutting items remain.**
 
 ---
 
 ## Recommended Next Steps
 
-1. **Address Phase 0/1/2/3 backlog items** — Frontend auth integration (X.6), dashboard real data (0.D), LLM classification fallback (3.A), BullMQ job distribution (2.A)
-2. **Begin Phase 4 (Generation)** — Requires `@agentic/agents` package buildout: LangGraph.js supervisor (4.1), Analyst Agent (4.2), Generator Agent (4.3), Reviewer Agent (4.4)
-3. **Phase 5 (Self-Healing)** is the final PoC phase — Depends on execution + classification being functional (both now complete)
+1. **Address cross-cutting backlog** — Frontend auth integration (X.6), dashboard real data (0.D), audit log viewer (X.5)
+2. **BullMQ job distribution** (2.A) — Dependencies installed but not wired; execution worker runs in-process via `spawn()`
+3. **LLM classification fallback** (3.A) — Heuristic classifier returns `unclassified` when no pattern matches; gateway integration ready
 4. **Persist custom patterns to database** (3.C) — Currently in-memory; needs a `classification_patterns` table
 5. **Historical flake analysis** (3.B) — Cross-run flake detection for more accurate classification
+6. **End-to-end integration testing** — Wire all phases together and test the full flow from ingestion → execution → classification → generation → healing
 
 ---
 

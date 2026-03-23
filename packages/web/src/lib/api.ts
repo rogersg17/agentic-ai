@@ -564,3 +564,129 @@ export const generationApi = {
       `/generation/stats/${encodeURIComponent(projectId)}`,
     ),
 };
+
+// ──────────────────────── Healing ──────────────────────────────
+
+export interface HealingProposal {
+  id: string;
+  test_result_id: string;
+  test_case_neo4j_id: string;
+  change_type: string;
+  risk_level: string;
+  original_code: string;
+  proposed_code: string;
+  unified_diff: string;
+  explanation: string;
+  confidence_score: number;
+  evidence: Record<string, unknown>;
+  status: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  policy_checks: {
+    passed: boolean;
+    checks: Array<{ name: string; passed: boolean; message: string }>;
+    autoApprovable: boolean;
+  };
+  created_at: string;
+}
+
+export interface HealRunResponse {
+  analyzed: number;
+  proposals: number;
+  skipped: number;
+  unstableTests: string[];
+}
+
+export interface PaginatedProposals {
+  proposals: HealingProposal[];
+  total: number;
+}
+
+export interface HealingStats {
+  totalProposals: number;
+  byStatus: Record<string, number>;
+  byChangeType: Record<string, number>;
+  byRiskLevel: Record<string, number>;
+  avgConfidence: number;
+  unstableTests: string[];
+}
+
+export interface HealingPolicy {
+  enabled: boolean;
+  maxHealingsPerRun: number;
+  maxHealingsPerTest: number;
+  minConfidenceThreshold: number;
+  rules: Record<string, { autoApproveThreshold: number; requireReview: boolean }>;
+  excludedTests: string[];
+  excludedSelectors: string[];
+  requireDomSnapshot: boolean;
+  requireScreenshot: boolean;
+}
+
+export const healingApi = {
+  healRun: (runId: string) =>
+    apiFetch<HealRunResponse>('/healing/heal-run', {
+      method: 'POST',
+      body: JSON.stringify({ runId }),
+    }),
+
+  getRunProposals: (runId: string, status?: string) =>
+    apiFetch<PaginatedProposals>(
+      `/healing/proposals/run/${encodeURIComponent(runId)}${status ? `?status=${encodeURIComponent(status)}` : ''}`,
+    ),
+
+  getProjectProposals: (projectId: string, status?: string, limit = 50, offset = 0) =>
+    apiFetch<PaginatedProposals>(
+      `/healing/proposals/project/${encodeURIComponent(projectId)}?limit=${limit}&offset=${offset}${status ? `&status=${encodeURIComponent(status)}` : ''}`,
+    ),
+
+  getProposal: (proposalId: string) =>
+    apiFetch<HealingProposal>(
+      `/healing/proposals/${encodeURIComponent(proposalId)}`,
+    ),
+
+  reviewProposal: (proposalId: string, status: 'approved' | 'rejected', reason?: string) =>
+    apiFetch<HealingProposal>(
+      `/healing/proposals/${encodeURIComponent(proposalId)}/review`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status, reason }),
+      },
+    ),
+
+  bulkReview: (proposalIds: string[], status: 'approved' | 'rejected', reason?: string) =>
+    apiFetch<{ updated: number }>('/healing/proposals/bulk-review', {
+      method: 'POST',
+      body: JSON.stringify({ proposalIds, status, reason }),
+    }),
+
+  applyProposal: (proposalId: string, editedCode?: string) =>
+    apiFetch<{ applied: boolean; message: string }>(
+      `/healing/proposals/${encodeURIComponent(proposalId)}/apply`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ editedCode }),
+      },
+    ),
+
+  revertProposal: (proposalId: string, reason: string) =>
+    apiFetch<{ reverted: boolean; message: string }>(
+      `/healing/proposals/${encodeURIComponent(proposalId)}/revert`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      },
+    ),
+
+  getPolicy: (projectId: string) =>
+    apiFetch<HealingPolicy>(`/healing/policy/${encodeURIComponent(projectId)}`),
+
+  updatePolicy: (projectId: string, updates: Partial<HealingPolicy>) =>
+    apiFetch<HealingPolicy>(`/healing/policy/${encodeURIComponent(projectId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    }),
+
+  getStats: (projectId: string) =>
+    apiFetch<HealingStats>(`/healing/stats/${encodeURIComponent(projectId)}`),
+};

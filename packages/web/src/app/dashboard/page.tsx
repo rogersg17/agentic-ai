@@ -32,31 +32,30 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Recent Execution Runs"
-          value="24"
-          description="3 running now"
+          value="—"
+          description="No data yet"
           icon={<Play className="h-5 w-5" />}
         />
         <StatCard
           title="Pending Reviews"
-          value="7"
-          description="2 high priority"
+          value="—"
+          description="No data yet"
           icon={<ClipboardCheck className="h-5 w-5" />}
         />
         <StatCard
           title="Test Health"
-          value="94%"
-          description="Up 2% from last week"
+          value="—"
+          description="No data yet"
           icon={<HeartPulse className="h-5 w-5" />}
         />
         <StatCard
           title="Failure Triage Queue"
-          value="12"
-          description="5 new since yesterday"
+          value="—"
+          description="No data yet"
           icon={<AlertTriangle className="h-5 w-5" />}
         />
       </div>
 
-      {/* Placeholder panels */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Recent execution runs */}
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -64,35 +63,9 @@ export default function DashboardPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Latest test suite executions across all projects.
           </p>
-          <div className="mt-4 space-y-3">
-            {[
-              { name: 'auth-flow-suite', status: 'passed', time: '2m ago' },
-              { name: 'checkout-regression', status: 'failed', time: '8m ago' },
-              { name: 'api-contract-tests', status: 'running', time: '12m ago' },
-              { name: 'onboarding-e2e', status: 'passed', time: '25m ago' },
-            ].map((run) => (
-              <div
-                key={run.name}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
-              >
-                <div>
-                  <p className="text-sm font-medium text-card-foreground">{run.name}</p>
-                  <p className="text-xs text-muted-foreground">{run.time}</p>
-                </div>
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    run.status === 'passed'
-                      ? 'bg-emerald-500/10 text-emerald-600'
-                      : run.status === 'failed'
-                        ? 'bg-red-500/10 text-red-600'
-                        : 'bg-amber-500/10 text-amber-600'
-                  }`}
-                >
-                  {run.status}
-                </span>
-              </div>
-            ))}
-          </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            No execution runs yet.
+          </p>
         </div>
 
         {/* Failure triage queue */}
@@ -101,35 +74,9 @@ export default function DashboardPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Failures awaiting classification and assignment.
           </p>
-          <div className="mt-4 space-y-3">
-            {[
-              { name: 'login-timeout', priority: 'high', age: '1h' },
-              { name: 'payment-500', priority: 'high', age: '2h' },
-              { name: 'search-flake', priority: 'medium', age: '4h' },
-              { name: 'nav-render-shift', priority: 'low', age: '1d' },
-            ].map((issue) => (
-              <div
-                key={issue.name}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
-              >
-                <div>
-                  <p className="text-sm font-medium text-card-foreground">{issue.name}</p>
-                  <p className="text-xs text-muted-foreground">Open for {issue.age}</p>
-                </div>
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    issue.priority === 'high'
-                      ? 'bg-red-500/10 text-red-600'
-                      : issue.priority === 'medium'
-                        ? 'bg-amber-500/10 text-amber-600'
-                        : 'bg-slate-500/10 text-slate-600'
-                  }`}
-                >
-                  {issue.priority}
-                </span>
-              </div>
-            ))}
-          </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            No failures in the queue.
+          </p>
         </div>
       </div>
     </div>
