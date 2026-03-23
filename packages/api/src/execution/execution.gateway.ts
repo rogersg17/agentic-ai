@@ -22,7 +22,7 @@ export class ExecutionGateway implements OnGatewayConnection, OnGatewayDisconnec
   private readonly logger = new Logger(ExecutionGateway.name);
 
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   handleConnection(client: Socket) {
     this.logger.debug(`Client connected: ${client.id}`);

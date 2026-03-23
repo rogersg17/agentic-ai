@@ -210,3 +210,121 @@ export const knowledgeApi = {
   getStats: (projectId: string) =>
     apiFetch<Record<string, number>>(`/knowledge/stats/${encodeURIComponent(projectId)}`),
 };
+
+// ──────────────────────── Execution ────────────────────────────
+export interface BrowserConfig {
+  browsers: string[];
+  headless: boolean;
+  viewport?: { width: number; height: number };
+  retries?: number;
+  timeout?: number;
+  workers?: number;
+}
+
+export interface ExecutionRun {
+  id: string;
+  project_id: string;
+  triggered_by: string | null;
+  trigger_source: string;
+  ci_build_id: string | null;
+  git_commit: string | null;
+  git_branch: string | null;
+  environment: string | null;
+  browser_config: BrowserConfig;
+  shard_count: number;
+  status: string;
+  total_tests: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  flaky: number;
+  duration_ms: number | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface TestResult {
+  id: string;
+  run_id: string;
+  test_case_neo4j_id: string;
+  status: string;
+  retry_count: number;
+  duration_ms: number | null;
+  error_message: string | null;
+  stack_trace: string | null;
+  failure_classification: string | null;
+  classification_confidence: number | null;
+  screenshot_url: string | null;
+  trace_url: string | null;
+  dom_snapshot_url: string | null;
+  log_url: string | null;
+  shard_index: number | null;
+  created_at: string;
+}
+
+export interface ExecutionStats {
+  totalRuns: number;
+  completedRuns: number;
+  failedRuns: number;
+  avgDurationMs: number | null;
+  totalPassed: number;
+  totalFailed: number;
+  totalSkipped: number;
+  totalFlaky: number;
+}
+
+export interface PaginatedRuns {
+  runs: ExecutionRun[];
+  total: number;
+}
+
+export interface PaginatedResults {
+  results: TestResult[];
+  total: number;
+}
+
+export const executionApi = {
+  createRun: (data: {
+    projectId: string;
+    environment?: string;
+    gitCommit?: string;
+    gitBranch?: string;
+    browserConfig: BrowserConfig;
+    shardCount?: number;
+    testFilter?: string[];
+    grepPattern?: string;
+  }) =>
+    apiFetch<ExecutionRun>('/execution/runs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  listRuns: (projectId: string, limit = 20, offset = 0) =>
+    apiFetch<PaginatedRuns>(
+      `/execution/runs/project/${encodeURIComponent(projectId)}?limit=${limit}&offset=${offset}`,
+    ),
+
+  getRun: (runId: string) =>
+    apiFetch<ExecutionRun>(`/execution/runs/${encodeURIComponent(runId)}`),
+
+  getRunResults: (runId: string, limit = 100, offset = 0) =>
+    apiFetch<PaginatedResults>(
+      `/execution/runs/${encodeURIComponent(runId)}/results?limit=${limit}&offset=${offset}`,
+    ),
+
+  getTestResult: (resultId: string) =>
+    apiFetch<TestResult>(`/execution/results/${encodeURIComponent(resultId)}`),
+
+  cancelRun: (runId: string, reason?: string) =>
+    apiFetch<ExecutionRun>(`/execution/runs/${encodeURIComponent(runId)}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    }),
+
+  getProjectStats: (projectId: string) =>
+    apiFetch<ExecutionStats>(`/execution/stats/${encodeURIComponent(projectId)}`),
+
+  getArtifactUrl: (key: string) =>
+    apiFetch<{ url: string }>(`/execution/artifact-url?key=${encodeURIComponent(key)}`),
+};

@@ -18,24 +18,24 @@ export class ViewportDto {
   @IsInt()
   @Min(320)
   @Max(3840)
-  width: number;
+  width!: number;
 
   @ApiProperty({ example: 720 })
   @IsInt()
   @Min(240)
   @Max(2160)
-  height: number;
+  height!: number;
 }
 
 export class BrowserConfigDto {
   @ApiProperty({ example: ['chromium'], description: 'Browsers to run tests in' })
   @IsArray()
   @IsString({ each: true })
-  browsers: string[];
+  browsers!: string[];
 
   @ApiProperty({ example: true })
   @IsBoolean()
-  headless: boolean;
+  headless!: boolean;
 
   @ApiPropertyOptional({ type: ViewportDto })
   @IsOptional()
@@ -67,7 +67,7 @@ export class BrowserConfigDto {
 export class CreateRunDto {
   @ApiProperty({ description: 'Project ID to run tests for' })
   @IsUUID()
-  projectId: string;
+  projectId!: string;
 
   @ApiPropertyOptional({ description: 'Environment name (e.g. staging, production)' })
   @IsOptional()
@@ -87,7 +87,7 @@ export class CreateRunDto {
   @ApiProperty({ type: BrowserConfigDto })
   @ValidateNested()
   @Type(() => BrowserConfigDto)
-  browserConfig: BrowserConfigDto;
+  browserConfig!: BrowserConfigDto;
 
   @ApiPropertyOptional({ example: 1, description: 'Number of shards' })
   @IsOptional()
