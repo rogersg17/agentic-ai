@@ -11,10 +11,7 @@ import type { ParsedFixture } from './parser.types.js';
  *     workerFixture: [async ({ ... }, use) => { ... }, { scope: 'worker' }],
  *   });
  */
-export function parseFixtures(
-  filePath: string,
-  sourceContent: string,
-): ParsedFixture[] {
+export function parseFixtures(filePath: string, sourceContent: string): ParsedFixture[] {
   const sourceFile = ts.createSourceFile(
     filePath,
     sourceContent,
@@ -91,9 +88,10 @@ function extractFixture(
       }
     }
 
-    const dependencies = (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))
-      ? extractDependencies(fn, sourceFile)
-      : [];
+    const dependencies =
+      ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)
+        ? extractDependencies(fn, sourceFile)
+        : [];
 
     return {
       name,

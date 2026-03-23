@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   BookOpen,
@@ -13,8 +13,8 @@ import {
   Upload,
   GitCompare,
   type LucideIcon,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface NavItem {
   label: string;
@@ -25,15 +25,15 @@ export interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Assets", href: "/dashboard/assets", icon: Upload },
-  { label: "Knowledge Explorer", href: "/dashboard/knowledge", icon: BookOpen },
-  { label: "Traceability", href: "/dashboard/traceability", icon: GitCompare },
-  { label: "Execution", href: "/dashboard/execution", icon: Play },
-  { label: "Triage", href: "/dashboard/triage", icon: AlertTriangle },
-  { label: "Generation", href: "/dashboard/generation", icon: Sparkles },
-  { label: "Healing", href: "/dashboard/healing", icon: HeartPulse },
-  { label: "Admin", href: "/dashboard/admin", icon: Settings, roles: ["admin"] },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Assets', href: '/dashboard/assets', icon: Upload },
+  { label: 'Knowledge Explorer', href: '/dashboard/knowledge', icon: BookOpen },
+  { label: 'Traceability', href: '/dashboard/traceability', icon: GitCompare },
+  { label: 'Execution', href: '/dashboard/execution', icon: Play },
+  { label: 'Triage', href: '/dashboard/triage', icon: AlertTriangle },
+  { label: 'Generation', href: '/dashboard/generation', icon: Sparkles },
+  { label: 'Healing', href: '/dashboard/healing', icon: HeartPulse },
+  { label: 'Admin', href: '/dashboard/admin', icon: Settings, roles: ['admin'] },
 ];
 
 interface SidebarProps {
@@ -45,7 +45,7 @@ export function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
 
   const visibleItems = navItems.filter(
-    (item) => !item.roles || (userRole && item.roles.includes(userRole))
+    (item) => !item.roles || (userRole && item.roles.includes(userRole)),
   );
 
   return (
@@ -61,7 +61,7 @@ export function Sidebar({ userRole }: SidebarProps) {
         {visibleItems.map((item) => {
           const isActive =
             pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            (item.href !== '/dashboard' && pathname.startsWith(item.href));
           const Icon = item.icon;
 
           return (
@@ -69,10 +69,10 @@ export function Sidebar({ userRole }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />

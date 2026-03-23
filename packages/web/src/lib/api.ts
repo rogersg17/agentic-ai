@@ -1,24 +1,20 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 /** Thin wrapper around fetch that adds auth headers and handles errors. */
-async function apiFetch<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   // Don't set Content-Type for FormData (browser sets multipart boundary)
-  if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
+  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
   }
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
@@ -40,7 +36,7 @@ export class ApiError extends Error {
     message: string,
   ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
@@ -56,16 +52,16 @@ export interface AuthResponse {
 
 export const authApi = {
   login: (data: LoginPayload) =>
-    apiFetch<AuthResponse>("/auth/login", {
-      method: "POST",
+    apiFetch<AuthResponse>('/auth/login', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
   register: (data: LoginPayload & { name: string; role: string }) =>
-    apiFetch<AuthResponse>("/auth/register", {
-      method: "POST",
+    apiFetch<AuthResponse>('/auth/register', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
-  profile: () => apiFetch<AuthResponse["user"]>("/auth/profile"),
+  profile: () => apiFetch<AuthResponse['user']>('/auth/profile'),
 };
 
 // ──────────────────────── Projects ─────────────────────────────
@@ -81,20 +77,20 @@ export interface Project {
 }
 
 export const projectsApi = {
-  list: () => apiFetch<Project[]>("/projects"),
+  list: () => apiFetch<Project[]>('/projects'),
   get: (id: string) => apiFetch<Project>(`/projects/${encodeURIComponent(id)}`),
   create: (data: { name: string; slug?: string; description?: string }) =>
-    apiFetch<Project>("/projects", {
-      method: "POST",
+    apiFetch<Project>('/projects', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
   update: (id: string, data: { name?: string; description?: string }) =>
     apiFetch<Project>(`/projects/${encodeURIComponent(id)}`, {
-      method: "PATCH",
+      method: 'PATCH',
       body: JSON.stringify(data),
     }),
   delete: (id: string) =>
-    apiFetch<void>(`/projects/${encodeURIComponent(id)}`, { method: "DELETE" }),
+    apiFetch<void>(`/projects/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };
 
 // ──────────────────────── Ingestion ────────────────────────────
@@ -110,22 +106,22 @@ export interface IngestionResult {
 export const ingestionApi = {
   uploadFile: (projectId: string, file: File, assetType?: string) => {
     const form = new FormData();
-    form.append("file", file);
-    form.append("projectId", projectId);
-    if (assetType) form.append("assetType", assetType);
-    return apiFetch<IngestionResult>("/ingestion/upload", {
-      method: "POST",
+    form.append('file', file);
+    form.append('projectId', projectId);
+    if (assetType) form.append('assetType', assetType);
+    return apiFetch<IngestionResult>('/ingestion/upload', {
+      method: 'POST',
       body: form,
     });
   },
   uploadBatch: (projectId: string, files: File[]) => {
     const form = new FormData();
-    form.append("projectId", projectId);
+    form.append('projectId', projectId);
     for (const file of files) {
-      form.append("files", file);
+      form.append('files', file);
     }
-    return apiFetch<IngestionResult[]>("/ingestion/upload-batch", {
-      method: "POST",
+    return apiFetch<IngestionResult[]>('/ingestion/upload-batch', {
+      method: 'POST',
       body: form,
     });
   },
@@ -135,8 +131,8 @@ export const ingestionApi = {
     content: string;
     assetType?: string;
   }) =>
-    apiFetch<IngestionResult>("/ingestion/ingest-content", {
-      method: "POST",
+    apiFetch<IngestionResult>('/ingestion/ingest-content', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
 };
@@ -178,7 +174,7 @@ export interface TraceabilityRow {
     origin: string;
     confidence: number;
   }>;
-  coverageStatus: "covered" | "partial" | "uncovered";
+  coverageStatus: 'covered' | 'partial' | 'uncovered';
 }
 
 export const knowledgeApi = {
@@ -192,29 +188,25 @@ export const knowledgeApi = {
     apiFetch<{
       node: GraphNode;
       relationships: Array<{
-        direction: "incoming" | "outgoing";
+        direction: 'incoming' | 'outgoing';
         type: string;
         relatedNode: GraphNode;
       }>;
     }>(`/knowledge/entity/${encodeURIComponent(id)}`),
   search: (projectId: string, query: string, limit?: number) =>
     apiFetch<SearchResult[]>(
-      `/knowledge/search/${encodeURIComponent(projectId)}?q=${encodeURIComponent(query)}${limit ? `&limit=${limit}` : ""}`,
+      `/knowledge/search/${encodeURIComponent(projectId)}?q=${encodeURIComponent(query)}${limit ? `&limit=${limit}` : ''}`,
     ),
   semanticSearch: (projectId: string, query: string, limit?: number) =>
     apiFetch<SearchResult[]>(
-      `/knowledge/semantic-search/${encodeURIComponent(projectId)}?q=${encodeURIComponent(query)}${limit ? `&limit=${limit}` : ""}`,
+      `/knowledge/semantic-search/${encodeURIComponent(projectId)}?q=${encodeURIComponent(query)}${limit ? `&limit=${limit}` : ''}`,
     ),
   getTraceability: (projectId: string) =>
-    apiFetch<TraceabilityRow[]>(
-      `/knowledge/traceability/${encodeURIComponent(projectId)}`,
-    ),
+    apiFetch<TraceabilityRow[]>(`/knowledge/traceability/${encodeURIComponent(projectId)}`),
   getImpact: (id: string, depth?: number) =>
     apiFetch<GraphData>(
-      `/knowledge/impact/${encodeURIComponent(id)}${depth ? `?depth=${depth}` : ""}`,
+      `/knowledge/impact/${encodeURIComponent(id)}${depth ? `?depth=${depth}` : ''}`,
     ),
   getStats: (projectId: string) =>
-    apiFetch<Record<string, number>>(
-      `/knowledge/stats/${encodeURIComponent(projectId)}`,
-    ),
+    apiFetch<Record<string, number>>(`/knowledge/stats/${encodeURIComponent(projectId)}`),
 };

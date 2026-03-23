@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   knowledgeApi,
   projectsApi,
   type GraphData,
   type GraphNode,
   type SearchResult,
-} from "@/lib/api";
+} from '@/lib/api';
 import {
   Search,
   Network,
@@ -21,16 +21,16 @@ import {
   Puzzle,
   Bug,
   X,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const LABEL_COLORS: Record<string, string> = {
-  Requirement: "#3b82f6",
-  TestCase: "#22c55e",
-  PageObject: "#a855f7",
-  Helper: "#f59e0b",
-  Fixture: "#06b6d4",
-  Defect: "#ef4444",
+  Requirement: '#3b82f6',
+  TestCase: '#22c55e',
+  PageObject: '#a855f7',
+  Helper: '#f59e0b',
+  Fixture: '#06b6d4',
+  Defect: '#ef4444',
 };
 
 const LABEL_ICONS: Record<string, typeof FileText> = {
@@ -43,14 +43,14 @@ const LABEL_ICONS: Record<string, typeof FileText> = {
 };
 
 export default function KnowledgeExplorerPage() {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"graph" | "list">("list");
+  const [viewMode, setViewMode] = useState<'graph' | 'list'>('list');
   const [filterLabel, setFilterLabel] = useState<string | null>(null);
 
   const { data: projects } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ['projects'],
     queryFn: projectsApi.list,
   });
 
@@ -62,40 +62,39 @@ export default function KnowledgeExplorerPage() {
   }, [projects, selectedProjectId]);
 
   const { data: graphData, isLoading: graphLoading } = useQuery({
-    queryKey: ["knowledge-graph", selectedProjectId],
+    queryKey: ['knowledge-graph', selectedProjectId],
     queryFn: () => knowledgeApi.getGraph(selectedProjectId),
     enabled: !!selectedProjectId,
   });
 
   const { data: searchResults } = useQuery({
-    queryKey: ["knowledge-search", selectedProjectId, searchQuery],
+    queryKey: ['knowledge-search', selectedProjectId, searchQuery],
     queryFn: () => knowledgeApi.search(selectedProjectId, searchQuery),
     enabled: !!selectedProjectId && searchQuery.length >= 2,
   });
 
   const { data: stats } = useQuery({
-    queryKey: ["knowledge-stats", selectedProjectId],
+    queryKey: ['knowledge-stats', selectedProjectId],
     queryFn: () => knowledgeApi.getStats(selectedProjectId),
     enabled: !!selectedProjectId,
   });
 
   const { data: entityDetail } = useQuery({
-    queryKey: ["knowledge-entity", selectedNodeId],
+    queryKey: ['knowledge-entity', selectedNodeId],
     queryFn: () => knowledgeApi.getEntityDetail(selectedNodeId!),
     enabled: !!selectedNodeId,
   });
 
-  const filteredNodes = graphData?.nodes?.filter(
-    (n) => !filterLabel || n.label === filterLabel,
-  );
+  const filteredNodes = graphData?.nodes?.filter((n) => !filterLabel || n.label === filterLabel);
 
-  const displayNodes: GraphNode[] = searchQuery.length >= 2 && searchResults
-    ? searchResults.map((sr) => ({
-        id: sr.id,
-        label: sr.label,
-        properties: { title: sr.title, ...sr.properties } as Record<string, unknown>,
-      }))
-    : filteredNodes ?? [];
+  const displayNodes: GraphNode[] =
+    searchQuery.length >= 2 && searchResults
+      ? searchResults.map((sr) => ({
+          id: sr.id,
+          label: sr.label,
+          properties: { title: sr.title, ...sr.properties } as Record<string, unknown>,
+        }))
+      : (filteredNodes ?? []);
 
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
@@ -136,18 +135,14 @@ export default function KnowledgeExplorerPage() {
             {Object.entries(stats).map(([label, count]) => (
               <button
                 key={label}
-                onClick={() =>
-                  setFilterLabel(filterLabel === label ? null : label)
-                }
+                onClick={() => setFilterLabel(filterLabel === label ? null : label)}
                 className={cn(
-                  "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-                  filterLabel === label
-                    ? "ring-2 ring-ring"
-                    : "hover:opacity-80",
+                  'flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors',
+                  filterLabel === label ? 'ring-2 ring-ring' : 'hover:opacity-80',
                 )}
                 style={{
-                  backgroundColor: `${LABEL_COLORS[label] ?? "#666"}20`,
-                  color: LABEL_COLORS[label] ?? "#666",
+                  backgroundColor: `${LABEL_COLORS[label] ?? '#666'}20`,
+                  color: LABEL_COLORS[label] ?? '#666',
                 }}
               >
                 {label}
@@ -160,23 +155,19 @@ export default function KnowledgeExplorerPage() {
         {/* View Toggle */}
         <div className="flex gap-1 rounded-lg border border-border p-0.5">
           <button
-            onClick={() => setViewMode("list")}
+            onClick={() => setViewMode('list')}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors",
-              viewMode === "list"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted",
+              'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors',
+              viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
             )}
           >
             <List className="h-3.5 w-3.5" /> List
           </button>
           <button
-            onClick={() => setViewMode("graph")}
+            onClick={() => setViewMode('graph')}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors",
-              viewMode === "graph"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted",
+              'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors',
+              viewMode === 'graph' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
             )}
           >
             <Network className="h-3.5 w-3.5" /> Graph
@@ -192,8 +183,8 @@ export default function KnowledgeExplorerPage() {
           ) : displayNodes.length === 0 ? (
             <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
               {selectedProjectId
-                ? "No entities found. Upload assets to get started."
-                : "Select a project"}
+                ? 'No entities found. Upload assets to get started.'
+                : 'Select a project'}
             </div>
           ) : (
             <ul className="divide-y divide-border">
@@ -210,8 +201,8 @@ export default function KnowledgeExplorerPage() {
                     <button
                       onClick={() => setSelectedNodeId(node.id)}
                       className={cn(
-                        "flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted",
-                        selectedNodeId === node.id && "bg-muted",
+                        'flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted',
+                        selectedNodeId === node.id && 'bg-muted',
                       )}
                     >
                       <Icon
@@ -222,9 +213,7 @@ export default function KnowledgeExplorerPage() {
                         <p className="truncate font-medium">{title}</p>
                         <p className="truncate text-xs text-muted-foreground">
                           {node.label}
-                          {node.properties.filePath
-                            ? ` · ${node.properties.filePath}`
-                            : ""}
+                          {node.properties.filePath ? ` · ${node.properties.filePath}` : ''}
                         </p>
                       </div>
                       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -239,7 +228,7 @@ export default function KnowledgeExplorerPage() {
 
       {/* Main Panel */}
       <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-background">
-        {viewMode === "graph" ? (
+        {viewMode === 'graph' ? (
           <GraphView
             data={graphData}
             onSelectNode={setSelectedNodeId}
@@ -270,9 +259,7 @@ function GraphView({
   selectedNodeId: string | null;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [positions, setPositions] = useState<
-    Record<string, { x: number; y: number }>
-  >({});
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
 
   useEffect(() => {
     if (!data?.nodes?.length) return;
@@ -298,7 +285,7 @@ function GraphView({
     const canvas = canvasRef.current;
     if (!canvas || !data?.nodes?.length) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
@@ -318,7 +305,7 @@ function GraphView({
       ctx.beginPath();
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
-      ctx.strokeStyle = "#e5e7eb";
+      ctx.strokeStyle = '#e5e7eb';
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -329,14 +316,14 @@ function GraphView({
       if (!pos) continue;
 
       const isSelected = node.id === selectedNodeId;
-      const color = LABEL_COLORS[node.label] ?? "#666";
+      const color = LABEL_COLORS[node.label] ?? '#666';
 
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, isSelected ? 10 : 7, 0, 2 * Math.PI);
       ctx.fillStyle = color;
       ctx.fill();
       if (isSelected) {
-        ctx.strokeStyle = "#000";
+        ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         ctx.stroke();
       }
@@ -346,11 +333,11 @@ function GraphView({
         (node.properties.title as string) ??
         (node.properties.className as string) ??
         (node.properties.name as string) ??
-        "";
+        '';
       if (title) {
-        ctx.fillStyle = "#374151";
-        ctx.font = "11px Inter, sans-serif";
-        ctx.textAlign = "center";
+        ctx.fillStyle = '#374151';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'center';
         ctx.fillText(title.slice(0, 30), pos.x, pos.y + 20);
       }
     }
@@ -414,7 +401,7 @@ function DetailPanel({
   entityDetail: {
     node: GraphNode;
     relationships: Array<{
-      direction: "incoming" | "outgoing";
+      direction: 'incoming' | 'outgoing';
       type: string;
       relatedNode: GraphNode;
     }>;
@@ -441,10 +428,7 @@ function DetailPanel({
 
   // Properties to display (exclude large fields)
   const displayProps = Object.entries(node.properties).filter(
-    ([key]) =>
-      !["embedding", "sourceContent", "astSummary", "id", "projectId"].includes(
-        key,
-      ),
+    ([key]) => !['embedding', 'sourceContent', 'astSummary', 'id', 'projectId'].includes(key),
   );
 
   return (
@@ -452,10 +436,7 @@ function DetailPanel({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
-          <Icon
-            className="h-5 w-5"
-            style={{ color: LABEL_COLORS[node.label] }}
-          />
+          <Icon className="h-5 w-5" style={{ color: LABEL_COLORS[node.label] }} />
           <div>
             <h2 className="font-semibold">{title}</h2>
             <p className="text-xs text-muted-foreground">
@@ -463,29 +444,22 @@ function DetailPanel({
             </p>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="rounded-md p-1 hover:bg-muted"
-        >
+        <button onClick={onClose} className="rounded-md p-1 hover:bg-muted">
           <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Properties */}
       <div className="border-b border-border px-4 py-3">
-        <h3 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
-          Properties
-        </h3>
+        <h3 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Properties</h3>
         <dl className="space-y-1.5">
           {displayProps.map(([key, value]) => (
             <div key={key} className="flex gap-2 text-sm">
-              <dt className="shrink-0 font-medium text-muted-foreground w-32 truncate">
-                {key}
-              </dt>
+              <dt className="shrink-0 font-medium text-muted-foreground w-32 truncate">{key}</dt>
               <dd className="min-w-0 truncate">
-                {typeof value === "string"
+                {typeof value === 'string'
                   ? value.slice(0, 200)
-                  : String(JSON.stringify(value) ?? "").slice(0, 200)}
+                  : String(JSON.stringify(value) ?? '').slice(0, 200)}
               </dd>
             </div>
           ))}
@@ -493,7 +467,7 @@ function DetailPanel({
       </div>
 
       {/* Source Content (collapsible) */}
-      {typeof node.properties.sourceContent === "string" && (
+      {typeof node.properties.sourceContent === 'string' && (
         <details className="border-b border-border px-4 py-3">
           <summary className="cursor-pointer text-xs font-semibold uppercase text-muted-foreground">
             Source Content
@@ -527,11 +501,9 @@ function DetailPanel({
                     className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
                   >
                     <span className="text-xs text-muted-foreground">
-                      {rel.direction === "outgoing" ? "→" : "←"}
+                      {rel.direction === 'outgoing' ? '→' : '←'}
                     </span>
-                    <span className="text-xs font-mono text-muted-foreground">
-                      {rel.type}
-                    </span>
+                    <span className="text-xs font-mono text-muted-foreground">{rel.type}</span>
                     <RelIcon
                       className="h-3.5 w-3.5"
                       style={{ color: LABEL_COLORS[rel.relatedNode.label] }}

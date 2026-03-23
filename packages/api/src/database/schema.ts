@@ -19,18 +19,12 @@ const pkUuid = () =>
     .default(sql`gen_random_uuid()`);
 
 const timestamps = {
-  created_at: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updated_at: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 };
 
 const createdAt = {
-  created_at: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 };
 
 // ─── users ──────────────────────────────────────────────────────────────────────
@@ -45,9 +39,7 @@ export const users = pgTable(
     status: varchar('status', { length: 50 }).notNull().default('active'),
     ...timestamps,
   },
-  (table) => [
-    uniqueIndex('users_email_idx').on(table.email),
-  ],
+  (table) => [uniqueIndex('users_email_idx').on(table.email)],
 );
 
 // ─── projects ───────────────────────────────────────────────────────────────────
@@ -62,9 +54,7 @@ export const projects = pgTable(
     settings: jsonb('settings').notNull().default({}),
     ...timestamps,
   },
-  (table) => [
-    uniqueIndex('projects_slug_idx').on(table.slug),
-  ],
+  (table) => [uniqueIndex('projects_slug_idx').on(table.slug)],
 );
 
 // ─── execution_runs ─────────────────────────────────────────────────────────────
@@ -208,10 +198,7 @@ export const auditLog = pgTable(
   (table) => [
     index('audit_log_project_id_idx').on(table.project_id),
     index('audit_log_actor_id_idx').on(table.actor_id),
-    index('audit_log_entity_type_entity_id_idx').on(
-      table.entity_type,
-      table.entity_id,
-    ),
+    index('audit_log_entity_type_entity_id_idx').on(table.entity_type, table.entity_id),
     index('audit_log_created_at_idx').on(table.created_at),
   ],
 );
@@ -229,59 +216,47 @@ export const projectsRelations = relations(projects, ({ many }) => ({
   auditLogs: many(auditLog),
 }));
 
-export const executionRunsRelations = relations(
-  executionRuns,
-  ({ one, many }) => ({
-    project: one(projects, {
-      fields: [executionRuns.project_id],
-      references: [projects.id],
-    }),
-    triggeredBy: one(users, {
-      fields: [executionRuns.triggered_by],
-      references: [users.id],
-    }),
-    testResults: many(testResults),
+export const executionRunsRelations = relations(executionRuns, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [executionRuns.project_id],
+    references: [projects.id],
   }),
-);
+  triggeredBy: one(users, {
+    fields: [executionRuns.triggered_by],
+    references: [users.id],
+  }),
+  testResults: many(testResults),
+}));
 
-export const testResultsRelations = relations(
-  testResults,
-  ({ one, many }) => ({
-    run: one(executionRuns, {
-      fields: [testResults.run_id],
-      references: [executionRuns.id],
-    }),
-    healingProposals: many(healingProposals),
+export const testResultsRelations = relations(testResults, ({ one, many }) => ({
+  run: one(executionRuns, {
+    fields: [testResults.run_id],
+    references: [executionRuns.id],
   }),
-);
+  healingProposals: many(healingProposals),
+}));
 
-export const healingProposalsRelations = relations(
-  healingProposals,
-  ({ one }) => ({
-    testResult: one(testResults, {
-      fields: [healingProposals.test_result_id],
-      references: [testResults.id],
-    }),
-    reviewer: one(users, {
-      fields: [healingProposals.reviewed_by],
-      references: [users.id],
-    }),
+export const healingProposalsRelations = relations(healingProposals, ({ one }) => ({
+  testResult: one(testResults, {
+    fields: [healingProposals.test_result_id],
+    references: [testResults.id],
   }),
-);
+  reviewer: one(users, {
+    fields: [healingProposals.reviewed_by],
+    references: [users.id],
+  }),
+}));
 
-export const generationRequestsRelations = relations(
-  generationRequests,
-  ({ one }) => ({
-    project: one(projects, {
-      fields: [generationRequests.project_id],
-      references: [projects.id],
-    }),
-    requestedBy: one(users, {
-      fields: [generationRequests.requested_by],
-      references: [users.id],
-    }),
+export const generationRequestsRelations = relations(generationRequests, ({ one }) => ({
+  project: one(projects, {
+    fields: [generationRequests.project_id],
+    references: [projects.id],
   }),
-);
+  requestedBy: one(users, {
+    fields: [generationRequests.requested_by],
+    references: [users.id],
+  }),
+}));
 
 export const auditLogRelations = relations(auditLog, ({ one }) => ({
   project: one(projects, {

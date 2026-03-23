@@ -40,3 +40,56 @@ export enum GenerationStatus {
   APPROVED = 'approved',
   REJECTED = 'rejected',
 }
+
+// ─── Execution run types ────────────────────────────────────────────────────────
+
+export interface BrowserConfig {
+  browsers: string[];
+  headless: boolean;
+  viewport?: { width: number; height: number };
+  retries?: number;
+  timeout?: number;
+  workers?: number;
+}
+
+export interface ShardProgress {
+  shardIndex: number;
+  status: ExecutionStatus;
+  testsTotal: number;
+  testsCompleted: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+}
+
+/** WebSocket event payloads for real-time execution progress */
+export enum ExecutionEvent {
+  RUN_STARTED = 'execution:run_started',
+  RUN_PROGRESS = 'execution:run_progress',
+  RUN_COMPLETED = 'execution:run_completed',
+  TEST_COMPLETED = 'execution:test_completed',
+  SHARD_PROGRESS = 'execution:shard_progress',
+}
+
+export interface RunProgressPayload {
+  runId: string;
+  status: ExecutionStatus;
+  totalTests: number;
+  completed: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  flaky: number;
+  durationMs: number;
+  shards?: ShardProgress[];
+}
+
+export interface TestCompletedPayload {
+  runId: string;
+  testResultId: string;
+  testTitle: string;
+  status: TestResultStatus;
+  durationMs: number;
+  errorMessage?: string;
+  retryCount: number;
+}

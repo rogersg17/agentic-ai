@@ -1,13 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ingestionApi,
-  projectsApi,
-  type IngestionResult,
-  type Project,
-} from "@/lib/api";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ingestionApi, projectsApi, type IngestionResult, type Project } from '@/lib/api';
 import {
   Upload,
   FileText,
@@ -17,20 +12,20 @@ import {
   FolderOpen,
   Plus,
   X,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function AssetsPage() {
   const queryClient = useQueryClient();
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [showCreateProject, setShowCreateProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectName, setNewProjectName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [results, setResults] = useState<IngestionResult[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: projects } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ['projects'],
     queryFn: projectsApi.list,
   });
 
@@ -44,9 +39,9 @@ export default function AssetsPage() {
   const createProjectMutation = useMutation({
     mutationFn: (name: string) => projectsApi.create({ name }),
     onSuccess: (project) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       setSelectedProjectId(project.id);
-      setNewProjectName("");
+      setNewProjectName('');
       setShowCreateProject(false);
     },
   });
@@ -58,8 +53,8 @@ export default function AssetsPage() {
         : ingestionApi.uploadBatch(selectedProjectId, files),
     onSuccess: (data) => {
       setResults((prev) => [...data, ...prev]);
-      queryClient.invalidateQueries({ queryKey: ["knowledge-graph"] });
-      queryClient.invalidateQueries({ queryKey: ["knowledge-stats"] });
+      queryClient.invalidateQueries({ queryKey: ['knowledge-graph'] });
+      queryClient.invalidateQueries({ queryKey: ['knowledge-stats'] });
     },
   });
 
@@ -82,7 +77,7 @@ export default function AssetsPage() {
       if (!selectedProjectId || !e.target.files?.length) return;
       const files = Array.from(e.target.files);
       uploadMutation.mutate(files);
-      e.target.value = "";
+      e.target.value = '';
     },
     [selectedProjectId, uploadMutation],
   );
@@ -128,16 +123,15 @@ export default function AssetsPage() {
             value={newProjectName}
             onChange={(e) => setNewProjectName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && newProjectName.trim()) {
+              if (e.key === 'Enter' && newProjectName.trim()) {
                 createProjectMutation.mutate(newProjectName.trim());
               }
-              if (e.key === "Escape") setShowCreateProject(false);
+              if (e.key === 'Escape') setShowCreateProject(false);
             }}
           />
           <button
             onClick={() => {
-              if (newProjectName.trim())
-                createProjectMutation.mutate(newProjectName.trim());
+              if (newProjectName.trim()) createProjectMutation.mutate(newProjectName.trim());
             }}
             className="rounded-md bg-primary px-3 py-1 text-xs text-primary-foreground"
             disabled={createProjectMutation.isPending}
@@ -156,11 +150,9 @@ export default function AssetsPage() {
       {/* Upload Zone */}
       <div
         className={cn(
-          "relative rounded-xl border-2 border-dashed p-12 text-center transition-colors",
-          dragActive
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50",
-          !selectedProjectId && "pointer-events-none opacity-50",
+          'relative rounded-xl border-2 border-dashed p-12 text-center transition-colors',
+          dragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
+          !selectedProjectId && 'pointer-events-none opacity-50',
         )}
         onDragOver={(e) => {
           e.preventDefault();
@@ -179,7 +171,7 @@ export default function AssetsPage() {
             <Upload className="h-10 w-10 text-muted-foreground" />
             <div>
               <p className="text-sm font-medium">
-                Drag & drop files here, or{" "}
+                Drag & drop files here, or{' '}
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="text-primary underline underline-offset-4"

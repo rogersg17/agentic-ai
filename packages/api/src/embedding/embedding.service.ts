@@ -13,10 +13,7 @@ export class EmbeddingService {
   private readonly dimensions = 1536;
 
   constructor(private readonly configService: ConfigService) {
-    this.gatewayUrl = this.configService.get<string>(
-      'llm.gatewayUrl',
-      'http://localhost:4000',
-    );
+    this.gatewayUrl = this.configService.get<string>('llm.gatewayUrl', 'http://localhost:4000');
   }
 
   /**
@@ -43,9 +40,7 @@ export class EmbeddingService {
       };
       return data.data[0].embedding;
     } catch (error) {
-      this.logger.debug(
-        'LLM gateway unavailable, using deterministic fallback embedding',
-      );
+      this.logger.debug('LLM gateway unavailable, using deterministic fallback embedding');
       return this.fallbackEmbed(text);
     }
   }

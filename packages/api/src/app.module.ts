@@ -10,6 +10,7 @@ import { EmbeddingModule } from './embedding/embedding.module.js';
 import { IngestionModule } from './ingestion/ingestion.module.js';
 import { ProjectsModule } from './projects/projects.module.js';
 import { KnowledgeModule } from './knowledge/knowledge.module.js';
+import { ExecutionModule } from './execution/execution.module.js';
 import { HealthController } from './health/health.controller.js';
 
 @Module({
@@ -27,6 +28,7 @@ import { HealthController } from './health/health.controller.js';
     IngestionModule,
     ProjectsModule,
     KnowledgeModule,
+    ExecutionModule,
   ],
   controllers: [HealthController],
 })

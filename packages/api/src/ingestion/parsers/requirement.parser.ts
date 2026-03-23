@@ -9,9 +9,7 @@ import type { ParsedRequirement } from './parser.types.js';
  * - Gherkin-style Feature/Scenario blocks
  * - Acceptance criteria lists (lines starting with "AC:", "- [ ]", or numbered)
  */
-export function parseRequirementMarkdown(
-  content: string,
-): ParsedRequirement[] {
+export function parseRequirementMarkdown(content: string): ParsedRequirement[] {
   const requirements: ParsedRequirement[] = [];
 
   // Try Gherkin format first
@@ -192,10 +190,7 @@ function extractACText(line: string): string | null {
   return null;
 }
 
-function inferType(
-  level: number,
-  title: string,
-): ParsedRequirement['type'] {
+function inferType(level: number, title: string): ParsedRequirement['type'] {
   const lowerTitle = title.toLowerCase();
   if (lowerTitle.includes('epic') || level === 1) return 'epic';
   if (lowerTitle.includes('story') || lowerTitle.includes('feature') || level === 2) return 'story';

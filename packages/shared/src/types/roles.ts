@@ -98,7 +98,8 @@ export const ROLE_CAPABILITIES: Record<Role, Record<Capability, AccessLevel>> = 
 export function hasAccess(role: Role, capability: Capability, required: AccessLevel): boolean {
   const level = ROLE_CAPABILITIES[role][capability];
   if (required === AccessLevel.NONE) return true;
-  if (required === AccessLevel.READ) return level === AccessLevel.READ || level === AccessLevel.WRITE;
+  if (required === AccessLevel.READ)
+    return level === AccessLevel.READ || level === AccessLevel.WRITE;
   if (required === AccessLevel.WRITE) return level === AccessLevel.WRITE;
   return false;
 }

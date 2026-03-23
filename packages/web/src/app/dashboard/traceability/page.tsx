@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { knowledgeApi, projectsApi, type TraceabilityRow } from "@/lib/api";
-import { CheckCircle2, AlertTriangle, XCircle, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { knowledgeApi, projectsApi, type TraceabilityRow } from '@/lib/api';
+import { CheckCircle2, AlertTriangle, XCircle, FileText } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function TraceabilityPage() {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   const { data: projects } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ['projects'],
     queryFn: projectsApi.list,
   });
 
@@ -21,17 +21,14 @@ export default function TraceabilityPage() {
   }, [projects, selectedProjectId]);
 
   const { data: matrix, isLoading } = useQuery({
-    queryKey: ["traceability", selectedProjectId],
+    queryKey: ['traceability', selectedProjectId],
     queryFn: () => knowledgeApi.getTraceability(selectedProjectId),
     enabled: !!selectedProjectId,
   });
 
-  const coveredCount =
-    matrix?.filter((r) => r.coverageStatus === "covered").length ?? 0;
-  const partialCount =
-    matrix?.filter((r) => r.coverageStatus === "partial").length ?? 0;
-  const uncoveredCount =
-    matrix?.filter((r) => r.coverageStatus === "uncovered").length ?? 0;
+  const coveredCount = matrix?.filter((r) => r.coverageStatus === 'covered').length ?? 0;
+  const partialCount = matrix?.filter((r) => r.coverageStatus === 'partial').length ?? 0;
+  const uncoveredCount = matrix?.filter((r) => r.coverageStatus === 'uncovered').length ?? 0;
   const total = matrix?.length ?? 0;
   const coveragePercent = total > 0 ? Math.round((coveredCount / total) * 100) : 0;
 
@@ -141,15 +138,13 @@ export default function TraceabilityPage() {
                           <li key={tc.id} className="flex items-center gap-2">
                             <span
                               className={cn(
-                                "inline-block h-2 w-2 rounded-full",
-                                tc.status === "active"
-                                  ? "bg-green-500"
-                                  : "bg-muted-foreground",
+                                'inline-block h-2 w-2 rounded-full',
+                                tc.status === 'active' ? 'bg-green-500' : 'bg-muted-foreground',
                               )}
                             />
                             <span className="truncate">{tc.title}</span>
                             <span className="text-xs text-muted-foreground">
-                              {tc.origin === "ai_generated" ? "AI" : "Human"}
+                              {tc.origin === 'ai_generated' ? 'AI' : 'Human'}
                             </span>
                             {tc.confidence > 0 && (
                               <span className="text-xs text-muted-foreground">
@@ -193,13 +188,13 @@ function SummaryCard({
   );
 }
 
-function CoverageIcon({ status }: { status: TraceabilityRow["coverageStatus"] }) {
+function CoverageIcon({ status }: { status: TraceabilityRow['coverageStatus'] }) {
   switch (status) {
-    case "covered":
+    case 'covered':
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    case "partial":
+    case 'partial':
       return <AlertTriangle className="h-5 w-5 text-amber-500" />;
-    case "uncovered":
+    case 'uncovered':
       return <XCircle className="h-5 w-5 text-red-500" />;
   }
 }

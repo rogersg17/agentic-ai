@@ -71,9 +71,7 @@ export class IngestionService {
       });
     }
 
-    this.logger.log(
-      `Ingested ${fileName} as ${assetType}: ${nodeIds.length} entities created`,
-    );
+    this.logger.log(`Ingested ${fileName} as ${assetType}: ${nodeIds.length} entities created`);
 
     return {
       fileKey,

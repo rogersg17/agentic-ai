@@ -19,10 +19,7 @@ const LOCATOR_METHODS = new Set([
  * Extracts test names, describe blocks, assertions, imports, locators,
  * fixtures, requirement annotations, and test.step usage.
  */
-export function parsePlaywrightTest(
-  filePath: string,
-  sourceContent: string,
-): ParsedTestCase[] {
+export function parsePlaywrightTest(filePath: string, sourceContent: string): ParsedTestCase[] {
   const sourceFile = ts.createSourceFile(
     filePath,
     sourceContent,
@@ -164,10 +161,7 @@ function extractLocators(bodyText: string): ParsedLocator[] {
   return locators;
 }
 
-function extractFixtures(
-  call: ts.CallExpression,
-  _sourceFile: ts.SourceFile,
-): string[] {
+function extractFixtures(call: ts.CallExpression, _sourceFile: ts.SourceFile): string[] {
   const fixtures: string[] = [];
 
   // Playwright fixtures are destructured from the callback parameter:

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,16 +20,16 @@ export default function LoginPage() {
     try {
       // TODO: Replace with real auth API call
       if (!email || !password) {
-        throw new Error("Email and password are required.");
+        throw new Error('Email and password are required.');
       }
 
       // Simulate network delay
       await new Promise((r) => setTimeout(r, 500));
 
       // For now, navigate to dashboard on any valid-looking input
-      router.push("/dashboard");
+      router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed.");
+      setError(err instanceof Error ? err.message : 'Login failed.');
     } finally {
       setLoading(false);
     }
@@ -43,12 +43,8 @@ export default function LoginPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
             <Sparkles className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Agentic AI
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in to your account
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Agentic AI</h1>
+          <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>
 
         {/* Form card */}
@@ -63,10 +59,7 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-2">
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-card-foreground"
-            >
+            <label htmlFor="email" className="text-sm font-medium text-card-foreground">
               Email
             </label>
             <input
@@ -81,10 +74,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-card-foreground"
-            >
+            <label htmlFor="password" className="text-sm font-medium text-card-foreground">
               Password
             </label>
             <input
@@ -99,7 +89,7 @@ export default function LoginPage() {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
       </div>

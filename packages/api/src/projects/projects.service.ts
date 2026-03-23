@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
 import { projects } from '../database/schema.js';
@@ -17,11 +12,7 @@ export class ProjectsService {
     const slug = dto.slug ?? this.slugify(dto.name);
 
     // Check slug uniqueness
-    const existing = await this.db
-      .select()
-      .from(projects)
-      .where(eq(projects.slug, slug))
-      .limit(1);
+    const existing = await this.db.select().from(projects).where(eq(projects.slug, slug)).limit(1);
     if (existing.length > 0) {
       throw new ConflictException(`Project with slug "${slug}" already exists`);
     }
@@ -43,11 +34,7 @@ export class ProjectsService {
   }
 
   async findOne(id: string) {
-    const [project] = await this.db
-      .select()
-      .from(projects)
-      .where(eq(projects.id, id))
-      .limit(1);
+    const [project] = await this.db.select().from(projects).where(eq(projects.id, id)).limit(1);
 
     if (!project) {
       throw new NotFoundException(`Project ${id} not found`);
@@ -56,11 +43,7 @@ export class ProjectsService {
   }
 
   async findBySlug(slug: string) {
-    const [project] = await this.db
-      .select()
-      .from(projects)
-      .where(eq(projects.slug, slug))
-      .limit(1);
+    const [project] = await this.db.select().from(projects).where(eq(projects.slug, slug)).limit(1);
 
     if (!project) {
       throw new NotFoundException(`Project with slug "${slug}" not found`);
@@ -86,10 +69,7 @@ export class ProjectsService {
   }
 
   async remove(id: string) {
-    const [project] = await this.db
-      .delete(projects)
-      .where(eq(projects.id, id))
-      .returning();
+    const [project] = await this.db.delete(projects).where(eq(projects.id, id)).returning();
 
     if (!project) {
       throw new NotFoundException(`Project ${id} not found`);

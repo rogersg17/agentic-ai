@@ -1,14 +1,16 @@
 import * as ts from 'typescript';
-import type { ParsedPageObject, ParsedMethod, ParsedSelector, ParsedLocator } from './parser.types.js';
+import type {
+  ParsedPageObject,
+  ParsedMethod,
+  ParsedSelector,
+  ParsedLocator,
+} from './parser.types.js';
 
 /**
  * Parse a Playwright Page Object file using the TypeScript Compiler API.
  * Extracts class name, methods, selectors/locators, imports, and base classes.
  */
-export function parsePageObject(
-  filePath: string,
-  sourceContent: string,
-): ParsedPageObject[] {
+export function parsePageObject(filePath: string, sourceContent: string): ParsedPageObject[] {
   const sourceFile = ts.createSourceFile(
     filePath,
     sourceContent,
@@ -66,10 +68,7 @@ function extractBaseClasses(classDecl: ts.ClassDeclaration): string[] {
   return bases;
 }
 
-function extractMethods(
-  classDecl: ts.ClassDeclaration,
-  sourceFile: ts.SourceFile,
-): ParsedMethod[] {
+function extractMethods(classDecl: ts.ClassDeclaration, sourceFile: ts.SourceFile): ParsedMethod[] {
   const methods: ParsedMethod[] = [];
 
   for (const member of classDecl.members) {
@@ -143,8 +142,15 @@ function extractLocatorsFromBody(bodyText: string): ParsedLocator[] {
   const seen = new Set<string>();
 
   const methods = [
-    'locator', 'getByTestId', 'getByRole', 'getByText', 'getByLabel',
-    'getByPlaceholder', 'getByAltText', 'getByTitle', 'frameLocator',
+    'locator',
+    'getByTestId',
+    'getByRole',
+    'getByText',
+    'getByLabel',
+    'getByPlaceholder',
+    'getByAltText',
+    'getByTitle',
+    'frameLocator',
   ];
 
   for (const method of methods) {

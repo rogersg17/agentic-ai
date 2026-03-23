@@ -35,10 +35,7 @@ export class Neo4jService implements OnModuleInit, OnModuleDestroy {
   /**
    * Execute a Cypher query and return the result records.
    */
-  async runQuery(
-    cypher: string,
-    params: Record<string, unknown> = {},
-  ): Promise<Neo4jRecord[]> {
+  async runQuery(cypher: string, params: Record<string, unknown> = {}): Promise<Neo4jRecord[]> {
     const result: EagerResult = await this.driver.executeQuery(cypher, params);
     return result.records;
   }
@@ -189,9 +186,7 @@ export class Neo4jService implements OnModuleInit, OnModuleDestroy {
     relTypes?: string[],
     depth: number = 1,
   ): Promise<Array<{ node: Record<string, unknown>; relationship: string; depth: number }>> {
-    const relPattern = relTypes && relTypes.length > 0
-      ? `:${relTypes.join('|')}`
-      : '';
+    const relPattern = relTypes && relTypes.length > 0 ? `:${relTypes.join('|')}` : '';
 
     const cypher = `
       MATCH path = (start:${label} {id: $id})-[${relPattern} *1..${depth}]-(connected)
@@ -205,7 +200,7 @@ export class Neo4jService implements OnModuleInit, OnModuleDestroy {
       relationship: record.get('relationship') as string,
       depth: (record.get('depth') as { toNumber?: () => number }).toNumber
         ? (record.get('depth') as { toNumber: () => number }).toNumber()
-        : record.get('depth') as number,
+        : (record.get('depth') as number),
     }));
   }
 }

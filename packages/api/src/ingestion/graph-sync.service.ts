@@ -29,10 +29,7 @@ export class GraphSyncService {
    * Sync parsed test cases into Neo4j.
    * Creates TestCase nodes and relationships (USES_PAGE_OBJECT, USES_HELPER, USES_FIXTURE).
    */
-  async syncTestCases(
-    projectId: string,
-    tests: ParsedTestCase[],
-  ): Promise<string[]> {
+  async syncTestCases(projectId: string, tests: ParsedTestCase[]): Promise<string[]> {
     const nodeIds: string[] = [];
 
     for (const test of tests) {
@@ -75,10 +72,7 @@ export class GraphSyncService {
   /**
    * Sync parsed page objects into Neo4j.
    */
-  async syncPageObjects(
-    projectId: string,
-    pageObjects: ParsedPageObject[],
-  ): Promise<string[]> {
+  async syncPageObjects(projectId: string, pageObjects: ParsedPageObject[]): Promise<string[]> {
     const nodeIds: string[] = [];
 
     for (const po of pageObjects) {
@@ -116,10 +110,7 @@ export class GraphSyncService {
   /**
    * Sync parsed helpers into Neo4j.
    */
-  async syncHelpers(
-    projectId: string,
-    helpers: ParsedHelper[],
-  ): Promise<string[]> {
+  async syncHelpers(projectId: string, helpers: ParsedHelper[]): Promise<string[]> {
     const nodeIds: string[] = [];
 
     for (const helper of helpers) {
@@ -147,10 +138,7 @@ export class GraphSyncService {
   /**
    * Sync parsed fixtures into Neo4j.
    */
-  async syncFixtures(
-    projectId: string,
-    fixtures: ParsedFixture[],
-  ): Promise<string[]> {
+  async syncFixtures(projectId: string, fixtures: ParsedFixture[]): Promise<string[]> {
     const nodeIds: string[] = [];
 
     for (const fixture of fixtures) {
@@ -181,10 +169,7 @@ export class GraphSyncService {
   /**
    * Sync parsed requirements into Neo4j.
    */
-  async syncRequirements(
-    projectId: string,
-    requirements: ParsedRequirement[],
-  ): Promise<string[]> {
+  async syncRequirements(projectId: string, requirements: ParsedRequirement[]): Promise<string[]> {
     const nodeIds: string[] = [];
 
     for (const req of requirements) {

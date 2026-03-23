@@ -45,4 +45,11 @@ export default () => ({
     gatewayUrl: process.env.LLM_GATEWAY_URL ?? 'http://localhost:4000',
     anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
   },
+
+  execution: {
+    workingDirectory: process.env.EXECUTION_WORKING_DIR ?? process.cwd(),
+    maxConcurrentRuns: parseInt(process.env.EXECUTION_MAX_CONCURRENT ?? '3', 10),
+    defaultTimeout: parseInt(process.env.EXECUTION_DEFAULT_TIMEOUT ?? '60000', 10),
+    artifactRetentionDays: parseInt(process.env.ARTIFACT_RETENTION_DAYS ?? '30', 10),
+  },
 });

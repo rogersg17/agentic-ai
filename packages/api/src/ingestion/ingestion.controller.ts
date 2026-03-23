@@ -130,7 +130,8 @@ export class IngestionController {
     },
   })
   async ingestContent(
-    @Body() body: { projectId: string; fileName: string; content: string; assetType?: UploadAssetType },
+    @Body()
+    body: { projectId: string; fileName: string; content: string; assetType?: UploadAssetType },
     @Request() req: { user: { userId: string } },
   ) {
     return this.ingestionService.ingestFile(

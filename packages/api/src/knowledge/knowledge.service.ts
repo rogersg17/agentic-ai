@@ -90,10 +90,7 @@ export class KnowledgeService {
   /**
    * Get entities of a specific type for a project.
    */
-  async getEntitiesByType(
-    projectId: string,
-    label: string,
-  ): Promise<GraphNode[]> {
+  async getEntitiesByType(projectId: string, label: string): Promise<GraphNode[]> {
     const records = await this.neo4j.runQuery(
       `MATCH (n:${label} {projectId: $projectId}) RETURN n ORDER BY n.createdAt DESC`,
       { projectId },
@@ -175,11 +172,7 @@ export class KnowledgeService {
   /**
    * Full-text search across all entity types.
    */
-  async searchFullText(
-    projectId: string,
-    query: string,
-    limit = 20,
-  ): Promise<SearchResult[]> {
+  async searchFullText(projectId: string, query: string, limit = 20): Promise<SearchResult[]> {
     const results: SearchResult[] = [];
 
     // Search requirements
@@ -323,16 +316,8 @@ export class KnowledgeService {
   /**
    * Get impact analysis: what is affected if an entity changes?
    */
-  async getImpactAnalysis(
-    id: string,
-    depth = 2,
-  ): Promise<GraphData> {
-    const connected = await this.neo4j.getConnected(
-      '',
-      id,
-      undefined,
-      depth,
-    );
+  async getImpactAnalysis(id: string, depth = 2): Promise<GraphData> {
+    const connected = await this.neo4j.getConnected('', id, undefined, depth);
 
     // Also get the root node
     const rootRecords = await this.neo4j.runQuery(
@@ -388,9 +373,10 @@ export class KnowledgeService {
         { projectId },
       );
       const count = records[0]?.get('count');
-      stats[label] = typeof count === 'object' && count !== null
-        ? Number(count.toNumber?.() ?? count)
-        : Number(count ?? 0);
+      stats[label] =
+        typeof count === 'object' && count !== null
+          ? Number(count.toNumber?.() ?? count)
+          : Number(count ?? 0);
     }
 
     return stats;

@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  UseGuards,
-  NotFoundException,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { RbacGuard } from '../auth/rbac.guard.js';
@@ -38,11 +31,11 @@ export class KnowledgeController {
    */
   @Get('entities/:projectId/:label')
   @RequireCapability(Capability.VIEW_TRACEABILITY, AccessLevel.READ)
-  @ApiQuery({ name: 'label', description: 'Entity type label (e.g. TestCase, Requirement, PageObject)' })
-  getEntitiesByType(
-    @Param('projectId') projectId: string,
-    @Param('label') label: string,
-  ) {
+  @ApiQuery({
+    name: 'label',
+    description: 'Entity type label (e.g. TestCase, Requirement, PageObject)',
+  })
+  getEntitiesByType(@Param('projectId') projectId: string, @Param('label') label: string) {
     // Validate label
     const validLabels = Object.values(NEO4J_LABELS);
     if (!validLabels.includes(label as (typeof validLabels)[number])) {
@@ -76,11 +69,7 @@ export class KnowledgeController {
     @Query('q') query: string,
     @Query('limit') limit?: string,
   ) {
-    return this.knowledgeService.searchFullText(
-      projectId,
-      query,
-      limit ? parseInt(limit, 10) : 20,
-    );
+    return this.knowledgeService.searchFullText(projectId, query, limit ? parseInt(limit, 10) : 20);
   }
 
   /**
@@ -118,14 +107,8 @@ export class KnowledgeController {
   @Get('impact/:id')
   @RequireCapability(Capability.VIEW_TRACEABILITY, AccessLevel.READ)
   @ApiQuery({ name: 'depth', required: false, description: 'Traversal depth (default: 2)' })
-  getImpactAnalysis(
-    @Param('id') id: string,
-    @Query('depth') depth?: string,
-  ) {
-    return this.knowledgeService.getImpactAnalysis(
-      id,
-      depth ? parseInt(depth, 10) : 2,
-    );
+  getImpactAnalysis(@Param('id') id: string, @Query('depth') depth?: string) {
+    return this.knowledgeService.getImpactAnalysis(id, depth ? parseInt(depth, 10) : 2);
   }
 
   /**
