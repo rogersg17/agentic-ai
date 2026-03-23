@@ -10,6 +10,8 @@ import {
   Sparkles,
   HeartPulse,
   Settings,
+  Upload,
+  GitCompare,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,7 +26,9 @@ export interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Assets", href: "/dashboard/assets", icon: Upload },
   { label: "Knowledge Explorer", href: "/dashboard/knowledge", icon: BookOpen },
+  { label: "Traceability", href: "/dashboard/traceability", icon: GitCompare },
   { label: "Execution", href: "/dashboard/execution", icon: Play },
   { label: "Triage", href: "/dashboard/triage", icon: AlertTriangle },
   { label: "Generation", href: "/dashboard/generation", icon: Sparkles },
