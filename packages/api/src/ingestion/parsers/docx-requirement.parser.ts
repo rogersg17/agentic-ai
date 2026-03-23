@@ -7,7 +7,7 @@ import { parseRequirementMarkdown } from './requirement.parser.js';
  * Converts DOCX to Markdown via mammoth, then delegates to the Markdown parser.
  */
 export async function parseRequirementDocx(buffer: Buffer): Promise<ParsedRequirement[]> {
-  const result = await mammoth.convertToMarkdown({ buffer });
+  const result = await (mammoth as any).convertToMarkdown({ buffer });
   const markdown = result.value;
 
   // Delegate to the existing Markdown parser

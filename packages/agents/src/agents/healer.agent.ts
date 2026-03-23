@@ -13,9 +13,9 @@ import type {
   HealingDiagnosis,
   HealingProposalDraft,
   DomDiff,
-} from './types.js';
-import { createUnifiedDiff } from './diff-utils.js';
-import { isAssertionLine } from './assertion-guard.js';
+} from '../healing/types.js';
+import { createUnifiedDiff } from '../healing/diff-utils.js';
+import { isAssertionLine } from '../healing/assertion-guard.js';
 
 // ─── Error patterns for deterministic diagnosis ─────────────────────────────────
 
@@ -281,7 +281,7 @@ export class HealerAgent {
   private async llmDiagnosis(context: HealingContext): Promise<HealingDiagnosis> {
     const { target, pageObjects } = context;
     const poSummary = pageObjects
-      .map((po) => `  ${po.className}: selectors=[${po.selectors.map((s) => s.value).join(', ')}]`)
+      .map((po: { className: string; selectors: Array<{ strategy: string; value: string }> }) => `  ${po.className}: selectors=[${po.selectors.map((s: { value: string }) => s.value).join(', ')}]`)
       .join('\n');
 
     const messages: LlmMessage[] = [
@@ -367,7 +367,7 @@ ${target.sourceCode.slice(0, 2000)}`,
 
       // Find alternative selector from DOM diff suggestions
       const alternative = diagnosis.evidence.domDiff?.suggestedSelectors.find(
-        (s) => s.original === loc.selector,
+        (s: { original: string; alternatives: Array<{ selector: string; strategy: string; confidence: number }> }) => s.original === loc.selector,
       )?.alternatives[0];
 
       if (!alternative) continue;
@@ -388,7 +388,7 @@ ${target.sourceCode.slice(0, 2000)}`,
 
         for (const po of context.pageObjects) {
           const matchingSelector = po.selectors.find(
-            (s) => s.value !== loc.selector && this.selectorLikelyMatches(s.value, loc.selector),
+            (s: { strategy: string; value: string }) => s.value !== loc.selector && this.selectorLikelyMatches(s.value, loc.selector!),
           );
           if (matchingSelector) {
             for (let i = 0; i < lines.length; i++) {
@@ -469,7 +469,8 @@ Original test code:
 ${sourceCode}
 
 Page objects available:
-${context.pageObjects.map((po) => `${po.className}: ${po.selectors.map((s) => `${s.strategy}=${s.value}`).join(', ')}`).join('\n')}`,
+${context.pageObjects.map((po: { className: string; selectors: Array<{ strategy: string; value: string }> }) => `${po.className}: ${po.selectors.map((s: { strategy: string; value: string }) => `${s.strategy}=${s.value}`).join(', ')}`).join('\n')}`,
+
       },
     ];
 

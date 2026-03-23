@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ExecutionStatus, TestResultStatus, ExecutionEvent } from '@agentic/shared';
 import type { CreateRunDto } from './dto/create-run.dto.js';
 import type { ExecutionService } from './execution.service.js';
-import type { ArtifactCollectionService } from './artifact-collection.service.js';
+import { ArtifactCollectionService } from './artifact-collection.service.js';
 import type { ExecutionGateway } from './execution.gateway.js';
 import { Inject, forwardRef } from '@nestjs/common';
 import { spawn, type ChildProcess } from 'node:child_process';

@@ -19,6 +19,7 @@ import {
   Capability,
   AccessLevel,
   HealingProposalStatus,
+  type HealingPolicy,
 } from '@agentic/shared';
 import { HealingService } from './healing.service.js';
 import {
@@ -147,7 +148,7 @@ export class HealingController {
     @Body() dto: UpdatePolicyDto,
     @Req() req: { user: { id: string } },
   ) {
-    return this.healingService.updateProjectPolicy(projectId, dto, req.user.id);
+    return this.healingService.updateProjectPolicy(projectId, dto as unknown as Partial<HealingPolicy>, req.user.id);
   }
 
   /** Get healing statistics for a project */

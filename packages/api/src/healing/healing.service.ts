@@ -473,8 +473,8 @@ export class HealingService {
       action: 'healing.policy_updated',
       entityType: 'project',
       entityId: projectId,
-      before: current,
-      after: updated,
+      before: current as unknown as Record<string, unknown>,
+      after: updated as unknown as Record<string, unknown>,
     });
 
     return updated;
