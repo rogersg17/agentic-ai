@@ -12,7 +12,7 @@ export enum UploadAssetType {
 export class UploadFileDto {
   @ApiProperty({ description: 'ID of the project to ingest into' })
   @IsString()
-  projectId: string;
+  projectId!: string;
 
   @ApiPropertyOptional({
     description: 'Asset type override. Auto-detected if not provided.',

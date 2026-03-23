@@ -89,11 +89,11 @@ export default function KnowledgeExplorerPage() {
     (n) => !filterLabel || n.label === filterLabel,
   );
 
-  const displayNodes = searchQuery.length >= 2 && searchResults
+  const displayNodes: GraphNode[] = searchQuery.length >= 2 && searchResults
     ? searchResults.map((sr) => ({
         id: sr.id,
         label: sr.label,
-        properties: { title: sr.title, ...sr.properties },
+        properties: { title: sr.title, ...sr.properties } as Record<string, unknown>,
       }))
     : filteredNodes ?? [];
 
@@ -485,7 +485,7 @@ function DetailPanel({
               <dd className="min-w-0 truncate">
                 {typeof value === "string"
                   ? value.slice(0, 200)
-                  : JSON.stringify(value)?.slice(0, 200)}
+                  : String(JSON.stringify(value) ?? "").slice(0, 200)}
               </dd>
             </div>
           ))}
@@ -493,7 +493,7 @@ function DetailPanel({
       </div>
 
       {/* Source Content (collapsible) */}
-      {node.properties.sourceContent && (
+      {typeof node.properties.sourceContent === "string" && (
         <details className="border-b border-border px-4 py-3">
           <summary className="cursor-pointer text-xs font-semibold uppercase text-muted-foreground">
             Source Content

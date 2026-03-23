@@ -5,7 +5,7 @@ export class CreateProjectDto {
   @ApiProperty({ description: 'Project name' })
   @IsString()
   @MaxLength(255)
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({ description: 'URL-friendly slug (auto-generated if omitted)' })
   @IsOptional()
