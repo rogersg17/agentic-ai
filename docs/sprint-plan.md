@@ -124,11 +124,11 @@ Asset parsing, indexing, graph sync, and knowledge explorer.
 
 | # | Item | Priority | Detail |
 |---|------|----------|--------|
-| 1.A | Interactive graph visualization (D3.js/vis.js) | Medium | Knowledge page has list view + basic graph toggle; no interactive D3/vis.js graph rendering yet |
-| 1.B | Git repo sync (webhook-based incremental) | Low | Architecture mentions Git webhook triggers; not implemented |
-| 1.C | DOCX/PDF requirement parsing | Low | Only Markdown + Gherkin parsers exist; no DOCX/PDF |
-| 1.D | Defect (Jira) ingestion adapter | Low | Defect entity types defined; no Jira adapter |
-| 1.E | Versioning & diff for re-ingested assets | Low | SHA-256 hashing mentioned in architecture; basic versioning but no diff UI |
+| 1.A | Interactive graph visualization (D3.js/vis.js) | ✅ Done | D3-force interactive graph with pan/zoom, drag nodes, click select, edge arrows, labels, legend, fit-to-view |
+| 1.B | Git repo sync (webhook-based incremental) | ✅ Done | `GitSyncService` + `GitWebhookController` — `POST /ingestion/git-webhook/:projectId` with GitHub signature verification, changed file detection, incremental re-ingestion |
+| 1.C | DOCX/PDF requirement parsing | ✅ Done | `parseRequirementDocx` (mammoth → MD) and `parseRequirementPdf` (pdf-parse → structured text → MD parser). Auto-detected via file extension |
+| 1.D | Defect (Jira) ingestion adapter | ✅ Done | `JiraAdapterService` fetches issues via JQL/key, maps to Defect entities. `JiraIngestionController` with `POST /ingestion/jira-import` and `POST /ingestion/jira-import-issue` endpoints. `syncDefects` in GraphSyncService |
+| 1.E | Versioning & diff for re-ingested assets | ✅ Done | SHA-256 hash comparison on re-ingestion: skip unchanged, bump version + store `previousFileHash` on update. `GET /knowledge/version/:id` and `GET /knowledge/diff/:id` API endpoints. Frontend API client updated |
 
 ---
 
@@ -244,7 +244,7 @@ Healing proposals with policy gates and review.
 | Phase | Status | Tasks Done | Tasks Total | Completion |
 |-------|--------|------------|-------------|------------|
 | **Phase 0: Foundation** | ✅ Complete | 22/24 | 24 | ~92% |
-| **Phase 1: Ingestion & Knowledge** | ✅ Complete | 21/21 | 21 | 100% |
+| **Phase 1: Ingestion & Knowledge** | ✅ Complete | 21/21 + 5 backlog | 21+5 | 100% |
 | **Phase 2: Execution** | ✅ Complete | 9/11 | 11 | ~82% |
 | **Phase 3: Classification + Triage** | ✅ Complete | 7/7 | 7 | 100% |
 | **Phase 4: Generation** | ⬜ Not Started | 0/11 | 11 | 0% |

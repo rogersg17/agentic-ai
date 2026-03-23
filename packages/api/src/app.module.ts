@@ -12,6 +12,7 @@ import { ProjectsModule } from './projects/projects.module.js';
 import { KnowledgeModule } from './knowledge/knowledge.module.js';
 import { ExecutionModule } from './execution/execution.module.js';
 import { ClassificationModule } from './classification/classification.module.js';
+import { GenerationModule } from './generation/generation.module.js';
 import { HealthController } from './health/health.controller.js';
 
 @Module({
@@ -31,6 +32,7 @@ import { HealthController } from './health/health.controller.js';
     KnowledgeModule,
     ExecutionModule,
     ClassificationModule,
+    GenerationModule,
   ],
   controllers: [HealthController],
 })

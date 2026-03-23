@@ -11,6 +11,8 @@ import {
   parseHelper,
   parseFixtures,
   parseRequirementMarkdown,
+  parseRequirementDocx,
+  parseRequirementPdf,
 } from './parsers/index.js';
 import type { AssetType } from './parsers/parser.types.js';
 
@@ -57,8 +59,8 @@ export class IngestionService {
 
     // 3. Parse and sync to graph
     const sourceContent = buffer.toString('utf-8');
-    const fileHash = createHash('sha256').update(sourceContent).digest('hex');
-    const nodeIds = await this.parseAndSync(projectId, fileName, sourceContent, assetType);
+    const fileHash = createHash('sha256').update(buffer).digest('hex');
+    const nodeIds = await this.parseAndSync(projectId, fileName, sourceContent, assetType, buffer);
 
     // 4. Audit log
     if (actorId) {
@@ -126,6 +128,11 @@ export class IngestionService {
       return 'requirement';
     }
 
+    // DOCX/PDF documents — treated as requirements
+    if (ext === '.docx' || ext === '.pdf') {
+      return 'requirement';
+    }
+
     // TypeScript/JavaScript files
     if (ext === '.ts' || ext === '.tsx' || ext === '.js' || ext === '.jsx') {
       // Test files
@@ -173,6 +180,7 @@ export class IngestionService {
     fileName: string,
     sourceContent: string,
     assetType: AssetType,
+    buffer?: Buffer,
   ): Promise<string[]> {
     switch (assetType) {
       case 'test': {
@@ -192,7 +200,15 @@ export class IngestionService {
         return this.graphSync.syncFixtures(projectId, fixtures);
       }
       case 'requirement': {
-        const reqs = parseRequirementMarkdown(sourceContent);
+        const ext = extname(fileName).toLowerCase();
+        let reqs;
+        if (ext === '.docx' && buffer) {
+          reqs = await parseRequirementDocx(buffer);
+        } else if (ext === '.pdf' && buffer) {
+          reqs = await parseRequirementPdf(buffer);
+        } else {
+          reqs = parseRequirementMarkdown(sourceContent);
+        }
         return this.graphSync.syncRequirements(projectId, reqs);
       }
     }

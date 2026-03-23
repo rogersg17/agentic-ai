@@ -381,4 +381,85 @@ export class KnowledgeService {
 
     return stats;
   }
+
+  /**
+   * Get version history for an entity.
+   */
+  async getEntityVersions(entityId: string): Promise<{
+    id: string;
+    label: string;
+    filePath: string | null;
+    version: number;
+    fileHash: string | null;
+    previousFileHash: string | null;
+    updatedAt: string | null;
+  }> {
+    const records = await this.neo4j.runQuery(
+      `MATCH (n {id: $id}) RETURN n, labels(n)[0] as label`,
+      { id: entityId },
+    );
+
+    if (records.length === 0) {
+      return {
+        id: entityId,
+        label: 'Unknown',
+        filePath: null,
+        version: 0,
+        fileHash: null,
+        previousFileHash: null,
+        updatedAt: null,
+      };
+    }
+
+    const props = records[0].get('n').properties as Record<string, unknown>;
+    return {
+      id: entityId,
+      label: records[0].get('label') as string,
+      filePath: (props.filePath as string) ?? null,
+      version: (props.version as number) ?? 1,
+      fileHash: (props.fileHash as string) ?? null,
+      previousFileHash: (props.previousFileHash as string) ?? null,
+      updatedAt: (props.updatedAt as string) ?? null,
+    };
+  }
+
+  /**
+   * Get a simple line-by-line diff of the current source content for an entity
+   * compared to a provided 'before' text (for client-side display).
+   * Returns the current source content + version metadata.
+   */
+  async getEntityDiff(entityId: string): Promise<{
+    id: string;
+    label: string;
+    version: number;
+    fileHash: string | null;
+    previousFileHash: string | null;
+    sourceContent: string | null;
+  }> {
+    const records = await this.neo4j.runQuery(
+      `MATCH (n {id: $id}) RETURN n, labels(n)[0] as label`,
+      { id: entityId },
+    );
+
+    if (records.length === 0) {
+      return {
+        id: entityId,
+        label: 'Unknown',
+        version: 0,
+        fileHash: null,
+        previousFileHash: null,
+        sourceContent: null,
+      };
+    }
+
+    const props = records[0].get('n').properties as Record<string, unknown>;
+    return {
+      id: entityId,
+      label: records[0].get('label') as string,
+      version: (props.version as number) ?? 1,
+      fileHash: (props.fileHash as string) ?? null,
+      previousFileHash: (props.previousFileHash as string) ?? null,
+      sourceContent: (props.sourceContent as string) ?? null,
+    };
+  }
 }

@@ -33,10 +33,54 @@ export class GraphSyncService {
     const nodeIds: string[] = [];
 
     for (const test of tests) {
-      const id = randomUUID();
       const fileHash = this.hashContent(test.sourceContent);
       const embeddingText = `${test.title} ${test.describeBlock ?? ''} ${test.assertions.join(' ')}`;
       const embedding = await this.embeddingService.embed(embeddingText);
+
+      // Check for existing node with same filePath + title
+      const existing = await this.findExistingByFilePath(
+        NEO4J_LABELS.TEST_CASE,
+        projectId,
+        test.filePath,
+      );
+
+      if (existing && existing.fileHash === fileHash) {
+        // Content unchanged — skip
+        this.logger.debug(`Skipping unchanged test: ${test.filePath}`);
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      if (existing) {
+        // Content changed — update in place, bump version
+        await this.updateExistingNode(
+          NEO4J_LABELS.TEST_CASE,
+          existing.id as string,
+          fileHash,
+          (existing.version as number) ?? 1,
+          {
+            fileHash,
+            title: test.title,
+            describeBlock: test.describeBlock ?? null,
+            sourceContent: test.sourceContent,
+            astSummary: JSON.stringify({
+              imports: test.imports,
+              assertions: test.assertions,
+              testSteps: test.testSteps,
+              requirementAnnotations: test.requirementAnnotations,
+            }),
+            locatorsUsed: JSON.stringify(test.locatorsUsed),
+            fixturesUsed: JSON.stringify(test.fixturesUsed),
+            embedding,
+          },
+        );
+        this.logger.log(`Updated test (v${((existing.version as number) ?? 1) + 1}): ${test.filePath}`);
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      // New node
+      const id = randomUUID();
 
       await this.neo4j.createNode(NEO4J_LABELS.TEST_CASE, {
         id,
@@ -76,10 +120,42 @@ export class GraphSyncService {
     const nodeIds: string[] = [];
 
     for (const po of pageObjects) {
-      const id = randomUUID();
       const fileHash = this.hashContent(po.sourceContent);
       const embeddingText = `${po.className} ${po.methods.map((m) => m.name).join(' ')} ${po.selectors.map((s) => s.value).join(' ')}`;
       const embedding = await this.embeddingService.embed(embeddingText);
+
+      const existing = await this.findExistingByFilePath(
+        NEO4J_LABELS.PAGE_OBJECT,
+        projectId,
+        po.filePath,
+      );
+
+      if (existing && existing.fileHash === fileHash) {
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      if (existing) {
+        await this.updateExistingNode(
+          NEO4J_LABELS.PAGE_OBJECT,
+          existing.id as string,
+          fileHash,
+          (existing.version as number) ?? 1,
+          {
+            fileHash,
+            className: po.className,
+            methods: JSON.stringify(po.methods),
+            selectors: JSON.stringify(po.selectors),
+            sourceContent: po.sourceContent,
+            embedding,
+          },
+        );
+        this.logger.log(`Updated page object (v${((existing.version as number) ?? 1) + 1}): ${po.className}`);
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      const id = randomUUID();
 
       await this.neo4j.createNode(NEO4J_LABELS.PAGE_OBJECT, {
         id,
@@ -114,8 +190,37 @@ export class GraphSyncService {
     const nodeIds: string[] = [];
 
     for (const helper of helpers) {
-      const id = randomUUID();
       const fileHash = this.hashContent(helper.sourceContent);
+
+      const existing = await this.findExistingByFilePath(
+        NEO4J_LABELS.HELPER,
+        projectId,
+        helper.filePath,
+      );
+
+      if (existing && existing.fileHash === fileHash) {
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      if (existing) {
+        await this.updateExistingNode(
+          NEO4J_LABELS.HELPER,
+          existing.id as string,
+          fileHash,
+          (existing.version as number) ?? 1,
+          {
+            fileHash,
+            exportedFunctions: JSON.stringify(helper.exportedFunctions),
+            sourceContent: helper.sourceContent,
+          },
+        );
+        this.logger.log(`Updated helper (v${((existing.version as number) ?? 1) + 1}): ${helper.filePath}`);
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      const id = randomUUID();
 
       await this.neo4j.createNode(NEO4J_LABELS.HELPER, {
         id,
@@ -142,8 +247,40 @@ export class GraphSyncService {
     const nodeIds: string[] = [];
 
     for (const fixture of fixtures) {
-      const id = randomUUID();
       const fileHash = this.hashContent(fixture.sourceContent);
+
+      const existing = await this.findExistingByFilePath(
+        NEO4J_LABELS.FIXTURE,
+        projectId,
+        fixture.filePath,
+      );
+
+      if (existing && existing.fileHash === fileHash) {
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      if (existing) {
+        await this.updateExistingNode(
+          NEO4J_LABELS.FIXTURE,
+          existing.id as string,
+          fileHash,
+          (existing.version as number) ?? 1,
+          {
+            fileHash,
+            name: fixture.name,
+            scope: fixture.scope,
+            provides: fixture.provides,
+            dependencies: JSON.stringify(fixture.dependencies),
+            sourceContent: fixture.sourceContent,
+          },
+        );
+        this.logger.log(`Updated fixture (v${((existing.version as number) ?? 1) + 1}): ${fixture.name}`);
+        nodeIds.push(existing.id as string);
+        continue;
+      }
+
+      const id = randomUUID();
 
       await this.neo4j.createNode(NEO4J_LABELS.FIXTURE, {
         id,
@@ -185,6 +322,48 @@ export class GraphSyncService {
         type: req.type,
         status: 'active',
         priority: 'medium',
+        version: 1,
+        embedding,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      nodeIds.push(id);
+    }
+
+    return nodeIds;
+  }
+
+  /**
+   * Sync defects (e.g. from Jira) into Neo4j as Defect nodes.
+   */
+  async syncDefects(
+    projectId: string,
+    defects: Array<{
+      externalId: string;
+      title: string;
+      description: string;
+      severity: string;
+      status: string;
+      affectedComponent?: string;
+    }>,
+  ): Promise<string[]> {
+    const nodeIds: string[] = [];
+
+    for (const defect of defects) {
+      const id = randomUUID();
+      const embeddingText = `${defect.title} ${defect.description}`;
+      const embedding = await this.embeddingService.embed(embeddingText);
+
+      await this.neo4j.createNode(NEO4J_LABELS.DEFECT, {
+        id,
+        projectId,
+        externalId: defect.externalId,
+        title: defect.title,
+        description: defect.description,
+        severity: defect.severity,
+        status: defect.status,
+        affectedComponent: defect.affectedComponent ?? null,
         version: 1,
         embedding,
         createdAt: new Date().toISOString(),
@@ -375,5 +554,102 @@ export class GraphSyncService {
 
   private hashContent(content: string): string {
     return createHash('sha256').update(content).digest('hex');
+  }
+
+  /**
+   * Find an existing node by label, projectId, and filePath.
+   * Returns the existing node properties if found, or null.
+   */
+  async findExistingByFilePath(
+    label: string,
+    projectId: string,
+    filePath: string,
+  ): Promise<Record<string, unknown> | null> {
+    const records = await this.neo4j.runQuery(
+      `MATCH (n:${label} {projectId: $projectId, filePath: $filePath}) RETURN n ORDER BY n.version DESC LIMIT 1`,
+      { projectId, filePath },
+    );
+    if (records.length === 0) return null;
+    return records[0].get('n').properties as Record<string, unknown>;
+  }
+
+  /**
+   * Find an existing node by label, projectId, and a name field (for fixtures/defects).
+   */
+  async findExistingByName(
+    label: string,
+    projectId: string,
+    nameField: string,
+    nameValue: string,
+  ): Promise<Record<string, unknown> | null> {
+    const records = await this.neo4j.runQuery(
+      `MATCH (n:${label} {projectId: $projectId}) WHERE n[$field] = $value RETURN n ORDER BY n.version DESC LIMIT 1`,
+      { projectId, field: nameField, value: nameValue },
+    );
+    if (records.length === 0) return null;
+    return records[0].get('n').properties as Record<string, unknown>;
+  }
+
+  /**
+   * Update an existing node: bump version, store previous hash, update content.
+   * Returns true if the node was actually changed (different hash), false if skipped.
+   */
+  async updateExistingNode(
+    label: string,
+    nodeId: string,
+    newHash: string,
+    currentVersion: number,
+    updates: Record<string, unknown>,
+  ): Promise<{ updated: boolean; previousHash: string | null }> {
+    const setClause = Object.keys(updates)
+      .map((k) => `n.${k} = $${k}`)
+      .join(', ');
+
+    const records = await this.neo4j.runQuery(
+      `MATCH (n:${label} {id: $nodeId})
+       SET ${setClause}, n.version = $newVersion, n.previousFileHash = n.fileHash, n.updatedAt = $now
+       RETURN n.previousFileHash as prevHash`,
+      {
+        nodeId,
+        ...updates,
+        newVersion: currentVersion + 1,
+        now: new Date().toISOString(),
+      },
+    );
+
+    const prevHash = records.length > 0 ? (records[0].get('prevHash') as string | null) : null;
+    return { updated: true, previousHash: prevHash };
+  }
+
+  /**
+   * Get version history for an entity by filePath within a project.
+   */
+  async getVersionHistory(
+    projectId: string,
+    filePath: string,
+  ): Promise<
+    Array<{
+      id: string;
+      version: number;
+      fileHash: string;
+      previousFileHash: string | null;
+      updatedAt: string;
+    }>
+  > {
+    const records = await this.neo4j.runQuery(
+      `MATCH (n {projectId: $projectId, filePath: $filePath})
+       RETURN n.id as id, n.version as version, n.fileHash as fileHash,
+              n.previousFileHash as previousFileHash, n.updatedAt as updatedAt
+       ORDER BY n.version DESC`,
+      { projectId, filePath },
+    );
+
+    return records.map((r) => ({
+      id: r.get('id') as string,
+      version: (r.get('version') as number) ?? 1,
+      fileHash: r.get('fileHash') as string,
+      previousFileHash: r.get('previousFileHash') as string | null,
+      updatedAt: r.get('updatedAt') as string,
+    }));
   }
 }

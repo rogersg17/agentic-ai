@@ -1,4 +1,4 @@
-import pdf from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import type { ParsedRequirement } from './parser.types.js';
 import { parseRequirementMarkdown } from './requirement.parser.js';
 
@@ -8,14 +8,19 @@ import { parseRequirementMarkdown } from './requirement.parser.js';
  * for structured extraction of requirements, acceptance criteria, and tags.
  */
 export async function parseRequirementPdf(buffer: Buffer): Promise<ParsedRequirement[]> {
-  const data = await pdf(buffer);
-  const text = data.text;
+  const parser = new PDFParse({ data: buffer });
+  try {
+    const result = await parser.getText();
+    const text = result.text;
 
-  // PDF text extraction doesn't preserve Markdown headers,
-  // so we heuristically re-insert header markers at likely section boundaries.
-  const structured = reconstructStructure(text);
+    // PDF text extraction doesn't preserve Markdown headers,
+    // so we heuristically re-insert header markers at likely section boundaries.
+    const structured = reconstructStructure(text);
 
-  return parseRequirementMarkdown(structured);
+    return parseRequirementMarkdown(structured);
+  } finally {
+    await parser.destroy();
+  }
 }
 
 /**

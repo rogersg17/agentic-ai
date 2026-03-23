@@ -209,6 +209,25 @@ export const knowledgeApi = {
     ),
   getStats: (projectId: string) =>
     apiFetch<Record<string, number>>(`/knowledge/stats/${encodeURIComponent(projectId)}`),
+  getEntityVersion: (id: string) =>
+    apiFetch<{
+      id: string;
+      label: string;
+      filePath: string | null;
+      version: number;
+      fileHash: string | null;
+      previousFileHash: string | null;
+      updatedAt: string | null;
+    }>(`/knowledge/version/${encodeURIComponent(id)}`),
+  getEntityDiff: (id: string) =>
+    apiFetch<{
+      id: string;
+      label: string;
+      version: number;
+      fileHash: string | null;
+      previousFileHash: string | null;
+      sourceContent: string | null;
+    }>(`/knowledge/diff/${encodeURIComponent(id)}`),
 };
 
 // ──────────────────────── Execution ────────────────────────────
@@ -424,4 +443,124 @@ export const classificationApi = {
     apiFetch<{ removed: boolean }>(`/classification/patterns/${encodeURIComponent(patternId)}`, {
       method: 'DELETE',
     }),
+};
+
+// ──────────────────────── Generation ───────────────────────────
+
+export interface GenerationRequest {
+  id: string;
+  project_id: string;
+  requested_by: string;
+  requirement_neo4j_ids: string[];
+  page_object_neo4j_ids: string[];
+  style_exemplar_neo4j_ids: string[];
+  configuration: Record<string, unknown>;
+  status: string;
+  generated_test_neo4j_ids: string[];
+  llm_model_used: string | null;
+  token_usage: { prompt?: number; completion?: number; total?: number };
+  created_at: string;
+}
+
+export interface AnalysisResult {
+  requirementId: string;
+  title: string;
+  acceptanceCriteria: Array<{
+    id: string;
+    text: string;
+    testable: boolean;
+    suggestedTestType: string;
+  }>;
+  suggestedTestCount: number;
+  complexity: string;
+  missingContext: string[];
+}
+
+export interface GeneratedTest {
+  code: string;
+  suggestedFilePath: string;
+  coveredCriteria: string[];
+  model: string;
+  tokenUsage: { prompt: number; completion: number; total: number };
+}
+
+export interface ReviewResult {
+  passed: boolean;
+  score: number;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    severity: string;
+    message: string;
+  }>;
+  suggestions: string[];
+}
+
+export interface GenerationRequestDetail extends GenerationRequest {
+  pipelineResult: {
+    status: string;
+    analysis: AnalysisResult | null;
+    generatedTests: GeneratedTest[];
+    reviewResults: ReviewResult[];
+    postProcessingResults: Array<{
+      passed: boolean;
+      checks: Array<{ name: string; passed: boolean; message: string }>;
+    }>;
+    styleProfile: Record<string, unknown> | null;
+    error: string | null;
+  } | null;
+}
+
+export interface GenerationStats {
+  totalRequests: number;
+  byStatus: Record<string, number>;
+  totalTokensUsed: number;
+  testsGenerated: number;
+}
+
+export const generationApi = {
+  createRequest: (data: {
+    projectId: string;
+    requirementNeo4jIds: string[];
+    pageObjectNeo4jIds?: string[];
+    styleExemplarNeo4jIds?: string[];
+    configuration?: Record<string, unknown>;
+  }) =>
+    apiFetch<GenerationRequest>('/generation/requests', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  listRequests: (projectId: string, limit = 20, offset = 0) =>
+    apiFetch<{ requests: GenerationRequest[]; total: number }>(
+      `/generation/requests/project/${encodeURIComponent(projectId)}?limit=${limit}&offset=${offset}`,
+    ),
+
+  getRequest: (requestId: string) =>
+    apiFetch<GenerationRequestDetail>(
+      `/generation/requests/${encodeURIComponent(requestId)}`,
+    ),
+
+  approveTest: (requestId: string, testIndex: number, editedCode?: string) =>
+    apiFetch<{ nodeId: string; filePath: string }>(
+      `/generation/requests/${encodeURIComponent(requestId)}/tests/${testIndex}/approve`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ action: 'approve', editedCode }),
+      },
+    ),
+
+  rejectRequest: (requestId: string, feedback?: string) =>
+    apiFetch<{ rejected: boolean }>(
+      `/generation/requests/${encodeURIComponent(requestId)}/reject`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ action: 'reject', feedback }),
+      },
+    ),
+
+  getStats: (projectId: string) =>
+    apiFetch<GenerationStats>(
+      `/generation/stats/${encodeURIComponent(projectId)}`,
+    ),
 };

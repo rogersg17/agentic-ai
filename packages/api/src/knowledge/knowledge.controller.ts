@@ -119,4 +119,22 @@ export class KnowledgeController {
   getProjectStats(@Param('projectId') projectId: string) {
     return this.knowledgeService.getProjectStats(projectId);
   }
+
+  /**
+   * Get version info for an entity (current version, hashes).
+   */
+  @Get('version/:id')
+  @RequireCapability(Capability.VIEW_TRACEABILITY, AccessLevel.READ)
+  getEntityVersion(@Param('id') id: string) {
+    return this.knowledgeService.getEntityVersions(id);
+  }
+
+  /**
+   * Get diff/source content for a versioned entity.
+   */
+  @Get('diff/:id')
+  @RequireCapability(Capability.VIEW_TRACEABILITY, AccessLevel.READ)
+  getEntityDiff(@Param('id') id: string) {
+    return this.knowledgeService.getEntityDiff(id);
+  }
 }
